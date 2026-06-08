@@ -1,0 +1,16 @@
+// 首页文章卡片样式：加大间距 + 底部分隔线
+.post-block {
+  margin-bottom: 30px;
+  padding-bottom: 25px;
+  border-bottom: 1px dashed #ddd;
+}
+
+// 暗黑模式下的分隔线颜色
+@media (prefers-color-scheme: dark) {
+  .post-block {
+    border-bottom-color: #444;
+  }
+}
+[data-theme="dark"] .post-block {
+  border-bottom-color: #444;
+}
