@@ -3,206 +3,200 @@ title: 搭建个人 Wiki 知识库
 date: 2026-06-08 10:00:00
 categories: [教程, 工具]
 tags: [wiki, hexo, github-pages, 知识库, 部署]
-description: 从零搭建在线知识库：Hexo + NexT 主题 + GitHub Pages，含人工搭建步骤、本地开发流程和 AI 搭建提示。
+description: 基于 Hexo + NexT + GitHub Pages 搭建个人知识库的完整指南，涵盖环境配置、主题安装、自动部署及日常维护。
 ---
 
-## 这套方案是什么
+## 方案概述
 
-简单来说，就是用 Hexo 把 Markdown 文件生成静态网页，推送到 GitHub 上，通过 GitHub Pages 免费托管。
+本方案使用 Hexo 将 Markdown 文件编译为静态网页，通过 GitHub Pages 进行托管，并借助 GitHub Actions 实现 push 自动部署。
 
-你只需要在本地写 Markdown 文章，一条 `git push` 命令，网站就自动更新了。不需要买服务器，也不需要自己维护。
+涉及的组件：
 
-工具清单：
-
-| 工具 | 作用 |
+| 组件 | 说明 |
 |------|------|
-| Hexo | 博客框架，把 Markdown 编译成静态网页 |
-| NexT | Hexo 的主题皮肤，负责网站的样式和布局 |
-| GitHub Pages | 免费托管静态网站，不需要服务器 |
-| GitHub Actions | 自动化流水线，push 代码后自动帮你编译部署 |
+| Hexo | 基于 Node.js 的静态博客框架，负责将 Markdown 编译为静态站点 |
+| NexT | Hexo 生态中使用最广泛的社区主题，提供多种方案和丰富的可配置项 |
+| GitHub Pages | GitHub 提供的静态网站托管服务，无需自建服务器 |
+| GitHub Actions | CI/CD 流水线，用于在代码推送到仓库后自动执行编译和部署 |
+
+---
 
 ## 环境准备
 
-开始之前，先确认电脑上装好了下面这几样：
+### Node.js
 
-**Node.js** — Hexo 的运行环境，建议 v18 以上。
+Hexo 基于 Node.js，要求版本不低于 v18。执行以下命令确认已安装：
 
 ```bash
 node --version
 ```
 
-如果没装，去 [Node.js 官网](https://nodejs.org/) 下载 LTS 版本安装。
+未安装时前往 [Node.js 官网](https://nodejs.org/) 下载 LTS 版本。
 
-**Git** — 版本控制和推送代码的工具。
+### Git
+
+用于版本控制和远程推送。
 
 ```bash
 git --version
 ```
 
-没装的话去 [Git 官网](https://git-scm.com/) 下载。
+未安装时前往 [Git 官网](https://git-scm.com/) 下载。
 
-**GitHub 账号** — 用来托管代码和网站。如果你还想在命令行操作 GitHub，可以装 [GitHub CLI](https://cli.github.com/)（可选，不装也可以用浏览器操作）。
+### GitHub 账号
+
+用于代码托管和静态站点发布。如需在命令行中操作 GitHub，可安装 [GitHub CLI](https://cli.github.com/)（可选，不影响后续步骤）。
 
 ---
 
 ## 第一步：安装 Hexo
 
-打开终端（Windows 用 Git Bash 或 PowerShell，macOS 用终端），执行：
+在终端（Windows 推荐 Git Bash 或 PowerShell，macOS/Linux 使用系统终端）中执行：
 
 ```bash
 npm install -g hexo-cli
 ```
 
-这条命令会在全局安装 `hexo` 命令。装完之后可以验证一下：
+安装完成后验证：
 
 ```bash
 hexo version
 ```
 
-## 第二步：创建项目
-
-找个放项目的位置，比如 `D:\wiki`。然后：
+## 第二步：初始化项目
 
 ```bash
-mkdir D:\wiki           # 创建目录
-cd D:\wiki              # 进入目录
-hexo init .             # 初始化 Hexo 项目
-npm install             # 安装依赖包
+mkdir D:\wiki
+cd D:\wiki
+hexo init .
+npm install
 ```
 
-`hexo init .` 会自动生成一套默认的项目结构：
+`hexo init .` 会在当前目录生成项目结构：
 
 ```text
 wiki/
 ├── _config.yml          # 站点配置文件
 ├── source/
-│   └── _posts/          # 文章放这里
+│   └── _posts/          # 文章目录
 ├── themes/              # 主题目录
 ├── scaffolds/           # 文章模板
-├── package.json         # Node.js 依赖
-└── node_modules/        # 安装的依赖包
+├── package.json         # Node.js 依赖声明
+└── node_modules/        # 已安装的依赖
 ```
 
 ## 第三步：安装 NexT 主题
 
-NexT 是目前 Hexo 生态里使用最广的主题，稳定、文档全、可配置项多。
+NexT 是 Hexo 社区中安装量最高的主题，特点为功能完善、文档齐全、可配置程度高。
 
 ```bash
 npm install hexo-theme-next
 ```
 
-装完之后修改站点配置文件 `_config.yml`，把主题从默认的 `landscape` 换成 `next`：
+安装后修改 `_config.yml` 中的 `theme` 字段，将默认值 `landscape` 替换为 `next`：
 
 ```yaml
 theme: next
 ```
 
-## 第四步：配置站点
+## 第四步：配置站点信息
 
-打开项目根目录的 `_config.yml`，修改以下几个关键字段：
+编辑项目根目录下的 `_config.yml`，重点修改以下字段：
 
 ```yaml
-# 站点名称和描述（这两行会出现在网站头部）
 title: 个人学习 Wiki
 subtitle: 日拱一卒，功不唐捐
 description: 编程、AI、科学、人文 —— 个人学习知识库
-
-# 作者名
-author: 你的名字
-
-# 语言设为中文
+author: 你的名称
 language: zh-CN
-
-# 时区
 timezone: 'Asia/Shanghai'
-
-# 网站地址（等仓库建好后再填真实地址）
 url: https://你的用户名.github.io/wiki
-
-# 主题
 theme: next
 ```
 
+`url` 字段填写最终部署地址，GitHub 仓库创建后即可确定。
+
 ## 第五步：配置 NexT 主题
 
-NexT 的主题配置放在项目根目录的 `_config.next.yml` 文件中。如果这个文件还不存在，手动新建一个。
+NexT 的主题配置位于项目根目录下的 `_config.next.yml`。若该文件不存在，手动新建。
 
-NexT 提供了四套方案（Scheme），你可以在这四者之间切换：
+### Scheme 选择
 
-| 方案 | 特点 |
+NexT 提供四种方案，通过 `scheme` 字段切换：
+
+| 方案 | 说明 |
 |------|------|
-| Muse | 无侧边栏，全宽布局，最极简 |
-| Mist | 紧凑型侧边栏，文字为主 |
-| Pisces | 干净清爽的侧边栏，适合做知识库 |
-| Gemini | 更大的侧边栏，偏展示型 |
+| Muse | 无侧边栏，全宽布局 |
+| Mist | 紧凑型侧边栏 |
+| Pisces | 常规侧边栏，适合知识库 |
+| Gemini | 大尺寸侧边栏 |
 
-推荐用 Pisces。基础配置如下：
+推荐 Pisces。基础配置：
 
 ```yaml
 scheme: Pisces
 
-darkmode: true             # 允许访客切换到暗黑模式
+darkmode: true
 
-menu:                      # 导航菜单
+menu:
   home: / || fa fa-home
   categories: /categories/ || fa fa-th
   about: /about/ || fa fa-user
 
-sidebar:                   # 侧边栏
+sidebar:
   position: left
   display: post
 
-back2top:                  # 回到顶部按钮
+back2top:
   enable: true
   sidebar: false
   scrollpercent: false
 
-codeblock:                 # 代码块设置
+codeblock:
   copy_button:
     enable: true
     show_result: true
     style: flat
 
-excerpt_description: true  # 首页显示文章描述而非正文截取
+excerpt_description: true
 ```
+
+- `darkmode: true` — 启用暗黑模式切换
+- `excerpt_description: true` — 首页使用 `description` 字段作为摘要，而非截取正文
 
 ## 第六步：本地预览
 
-在推送之前，先本地跑起来看看效果：
+推送至远程仓库之前，先在本地启动服务验证效果：
 
 ```bash
 hexo server
 ```
 
-或者简写为：
+或简写为 `hexo s`。
 
-```bash
-hexo s
-```
+默认访问地址为 `http://localhost:4000`。若端口被占用，Hexo 会自动切换到下一个可用端口，注意观察终端输出的实际地址。
 
-浏览器打开 `http://localhost:4000`，就能看到网站了。如果终端没报错但浏览器打不开，检查一下 `hexo s` 输出里显示的端口号（不一定是 4000，被占用的话会自动换端口）。
+`hexo server` 会持续监听文件变更，修改文章或配置后刷新浏览器即可查看更新，无需手动重启。
 
-`hexo server` 会监听文件变化，你改了文章或配置后刷新浏览器就能看到最新效果，不需要重启。
-
-按 `Ctrl + C` 可以停掉本地服务器。
+按 `Ctrl + C` 停止服务。
 
 ## 第七步：创建 GitHub 仓库
 
-登录 GitHub，新建一个仓库。仓库名建议就叫 `wiki`（这个名称会出现在网址里，比如 `用户名.github.io/wiki`）。
+在 GitHub 上新建仓库，名称建议为 `wiki`（该名称将作为 URL 路径的一部分，如 `用户名.github.io/wiki`）。
 
-仓库类型选 Public（公开），这是免费使用 GitHub Pages 的前提。
+仓库可见性需设为 **Public**，这是使用免费 GitHub Pages 的前提。
 
-如果你装了 GitHub CLI，可以在终端一条命令搞定：
+若已安装 GitHub CLI：
 
 ```bash
 gh repo create 你的用户名/wiki --public --description "个人学习 wiki 知识库"
 ```
 
-## 第八步：配置 GitHub Actions 自动部署
+## 第八步：配置自动部署
 
-每次手动编译再部署太麻烦了。GitHub Actions 可以做到：你往 main 分支 push 代码，它自动帮你编译并发布到 gh-pages 分支。
+每次手动执行编译和部署效率较低。GitHub Actions 可以将这一过程自动化：向 `main` 分支推送代码后，自动触发编译并部署至 `gh-pages` 分支。
 
-在项目里创建 `.github/workflows/deploy.yml`：
+在项目目录下创建 `.github/workflows/deploy.yml`：
 
 ```yaml
 name: Deploy
@@ -235,9 +229,15 @@ jobs:
           force_orphan: true
 ```
 
-这里的逻辑很简单：检出代码 → 安装依赖 → 执行 `hexo generate` 编译 → 把 `public/` 目录推到 `gh-pages` 分支。
+工作流说明：
 
-## 第九步：推送代码并启用 Pages
+1. `actions/checkout@v4` — 检出仓库代码
+2. `actions/setup-node@v4` — 配置 Node.js 环境
+3. `npm ci` — 安装依赖
+4. `npx hexo generate` — 编译生成静态文件至 `public/` 目录
+5. `peaceiris/actions-gh-pages@v4` — 将 `public/` 目录推送至 `gh-pages` 分支
+
+## 第九步：推送并启用 Pages
 
 ```bash
 cd D:\wiki
@@ -249,152 +249,133 @@ git remote add origin git@github.com:你的用户名/wiki.git
 git push -u origin main
 ```
 
-如果用的是 `git@github.com:...` 这种 SSH 地址，需要先在 GitHub 设置里配好 SSH 公钥。不想折腾可以用 HTTPS 地址：`https://github.com/你的用户名/wiki.git`，push 的时候会弹框让你登录。
+> 使用 `git@github.com:...` 格式的 SSH 地址需要先在 GitHub 中配置 SSH 公钥。也可使用 HTTPS 地址 `https://github.com/你的用户名/wiki.git`，首次推送时会提示登录。
 
-推送之后，去 GitHub 仓库页面 → Settings → Pages，把 Source 选为 `gh-pages` 分支。等一两分钟，网站就上线了。
+推送完成后，进入 GitHub 仓库页面 → Settings → Pages，将 Source 设置为 `gh-pages` 分支。GitHub 将在数分钟内完成首次部署。
 
-访问地址：`https://你的用户名.github.io/wiki`
+最终访问地址：`https://你的用户名.github.io/wiki`
 
-以后每次 push 代码，GitHub Actions 都会自动重新部署，你在浏览器里直接看就行。
+此后每次向 `main` 分支推送代码，GitHub Actions 均会自动重新部署。
 
 ---
 
-## 本地开发完整流程
+## 本地开发流程
 
-### 常规操作
-
-每天写文章的流程就这几步：
+### 日常写作
 
 ```bash
 cd D:\wiki
 
-# 1. 拉取最新代码（多人协作时需要，一个人用可跳过）
+# 1. 拉取远程更新（单人不需执行）
 git pull
 
 # 2. 创建新文章
 hexo new "文章标题"
 
-# 3. 文章会生成在 source/_posts/ 目录下，用任意编辑器打开编辑
-#    写完后保存
+# 3. 文章生成于 source/_posts/ 目录，使用任意文本编辑器编辑
 
 # 4. 本地预览
 hexo server
-# 浏览器打开 http://localhost:4000 看效果
+# 浏览器访问 http://localhost:4000
 
-# 5. 满意了就推上去
+# 5. 推送
 git add -A
 git commit -m "新增：文章标题"
 git push
 ```
 
-### 手动编译（不推送时）
+### 手动编译
 
-如果想看编译产物，或在没有网络的时候调试：
-
-```bash
-hexo clean        # 清除缓存和已编译文件
-hexo generate     # 重新生成静态文件到 public/ 目录
-```
-
-`hexo clean` 不是每次都需要的，只有当你改了配置但刷新没生效、或者编译出错的时候用一下。
-
-`hexo server` 本身也包含编译步骤，所以日常写文章直接 `hexo s` 预览就够了，不需要手动 generate。
-
-### 手动部署
-
-正常情况下 GitHub Actions 会自动部署，但如果你想手动推送 gh-pages：
+若需查看编译产物或在离线状态下调试：
 
 ```bash
-hexo deploy
+hexo clean       # 清除缓存与编译输出
+hexo generate    # 重新编译至 public/ 目录
 ```
 
-要使用这个命令，需要先在 `_config.yml` 里配置 deploy 参数。不过既然有了 GitHub Actions，一般不需要手动执行这个。
+`hexo clean` 仅在配置变更未生效或编译异常时使用。日常预览使用 `hexo server` 即可，该命令已内置编译步骤。
 
 ---
 
-## 写文章的规范
+## 文章编写规范
 
-### 文件存放
+### 文件格式
 
-所有文章都在 `source/_posts/` 目录下，`.md` 格式。
+所有文章置于 `source/_posts/` 目录，文件格式为 Markdown（`.md`）。
 
 ### Frontmatter
 
-每篇文章顶部的 YAML 区域叫 frontmatter，用来定义文章元信息。一个完整的示例：
+每篇文章以 YAML 格式的 Frontmatter 开头，定义元信息：
 
 ```yaml
 ---
 title: 文章标题
 date: 2026-06-08 12:00:00
-categories: [分类1, 子分类2]
-tags: [标签1, 标签2, 标签3]
-description: 这里写文章的概述，会出现在首页标题下方，一两句话就好。
+categories: [一级分类, 子分类]
+tags: [标签1, 标签2]
+description: 文章概述，显示于首页标题下方，建议控制在两句话以内。
 ---
 ```
 
-### description 的作用
+### description 字段
 
-`description` 字段就是首页标题下面显示的那行概述文字。不写的话，Hexo 会自动截取正文前几行，但效果不好，建议每篇都自己写。
+`description` 决定了首页文章卡片的概述文字。若省略此字段，Hexo 将自动截取正文头部内容作为摘要（通常效果不佳），因此建议每篇文章自行填写。
 
-### 正文用 Markdown
+### 正文语法
 
-Hexo 支持标准 Markdown 语法。标题用 `#`，代码块用三个反引号，链接用 `[文字](url)`。写法和 GitHub 的 README 一样，没什么特殊的。
+支持标准 Markdown 语法：`#` 表示标题、三个反引号包裹代码块、`[文字](url)` 表示链接。
 
-### 新建文章命令
+### 文章模板
 
-```bash
-hexo new "你的标题"
-```
-
-这个命令用的是 `scaffolds/post.md` 里的模板来生成文件。你可以修改这个模板，让每次新建文章都自动带上你常用的 categories 或 tags。
+`hexo new` 命令使用 `scaffolds/post.md` 作为模板生成文件。可编辑该模板，预设常用的 categories 或 tags，减少重复填写。
 
 ---
 
-## Windows 上的一些注意事项
+## Windows 环境注意事项
 
-- 终端推荐用 **Git Bash** 或 **PowerShell**，`hexo` 命令在这两种环境下都能正常跑。
-- 路径分隔符用反斜杠 `\` 还是斜杠 `/` 都可以，Hexo 内部会处理好。
-- `node_modules` 目录很大，`.gitignore` 里已经排除了，不用担心被提交到仓库。
-- 如果 `hexo server` 启动报错，先跑一次 `hexo clean` 清缓存试试。
+- 终端推荐使用 **Git Bash** 或 **PowerShell**。
+- 文件路径中的正斜杠 `/` 和反斜杠 `\` 均可使用，Hexo 内部统一处理。
+- `node_modules/` 由 `.gitignore` 排除，不会被提交至仓库。
+- 如 `hexo server` 启动异常，先执行 `hexo clean` 清空缓存后重试。
 
 ---
 
-## 附：让 AI 帮你搭建
+## 附录：使用 AI 搭建
 
-如果以后换了电脑或者想重新搭一套，把下面这段话发给 AI 助手就行。
+以下提示语可供 AI 助手直接执行，用于重建或迁移本方案。
 
-### 详细版
+### 完整提示语
 
 ```
-帮我用 Hexo + NexT 主题 + GitHub Pages 搭建个人 wiki 知识库。
+使用 Hexo + NexT 主题 + GitHub Pages 搭建个人 Wiki 知识库。
 
 要求：
 1. 本地目录 D:\wiki
-2. GitHub 仓库：我的用户名/wiki
-3. 主题用 NexT 的 Pisces 方案
-4. 配置好暗黑模式、代码复制按钮、回到顶部
-5. 首页用 description 字段显示文章概述，不要截取正文
-6. 导航栏只保留：首页、分类、关于
-7. 配置 GitHub Actions：push main 自动部署到 gh-pages
-8. 生成标签页、分类页、关于页
-9. 写一篇详细的教程文章作为首篇内容
+2. GitHub 仓库：当前用户名/wiki
+3. 主题方案：NexT Pisces
+4. 启用暗黑模式、代码复制按钮、回到顶部按钮
+5. 首页使用 description 字段显示文章摘要（关闭正文截取）
+6. 导航栏仅保留首页、分类、关于
+7. 配置 GitHub Actions：向 main 分支推送后自动编译并部署至 gh-pages
+8. 生成分类页与关于页
+9. 首篇文章为本搭建教程
 
 执行步骤：
-- 检查 Node.js 和 Git 环境
+- 验证 Node.js 与 Git 环境
 - npm install -g hexo-cli
 - hexo init D:\wiki && npm install
 - npm install hexo-theme-next
 - 创建 _config.next.yml 并配置 Pisces 方案
-- 修改 _config.yml 的站点信息和 url
-- gh repo create + 配置 .github/workflows/deploy.yml
-- git push 并验证网站上线
-- 告诉我访问地址
+- 修改 _config.yml 中的站点信息与 url
+- gh repo create 创建仓库
+- 配置 .github/workflows/deploy.yml
+- git push 并确认线上访问正常
 ```
 
-### 简化版
+### 简化提示语
 
 ```
-帮我用 Hexo + NexT + GitHub Pages 搭 wiki，本地 D:\wiki，仓库 wiki，暗黑模式。
+使用 Hexo + NexT + GitHub Pages 搭建 Wiki，本地目录 D:\wiki，仓库名称 wiki，启用暗黑模式。
 ```
 
 ---
@@ -403,5 +384,5 @@ hexo new "你的标题"
 
 - [Hexo 官方文档](https://hexo.io/docs/)
 - [NexT 主题文档](https://theme-next.js.org/)
-- [GitHub Pages 帮助](https://docs.github.com/en/pages)
+- [GitHub Pages 文档](https://docs.github.com/en/pages)
 - [GitHub Actions 文档](https://docs.github.com/en/actions)
