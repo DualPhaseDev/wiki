@@ -3,6 +3,7 @@ title: 搭建个人 Wiki 知识库
 date: 2026-06-08 10:00:00
 categories: [教程, 工具]
 tags: [wiki, hexo, github-pages, 知识库, mkdocs, 部署]
+description: 从零搭建在线知识库：Hexo + NexT 主题 + GitHub Pages，含完整步骤和 AI 提示语。
 ---
 
 ## 方案概述
@@ -14,8 +15,6 @@ tags: [wiki, hexo, github-pages, 知识库, mkdocs, 部署]
 ```text
 本地 D:\wiki (Markdown) → git push → GitHub Actions → DualPhaseDev.github.io/wiki
 ```
-
-<!-- more -->
 
 ---
 

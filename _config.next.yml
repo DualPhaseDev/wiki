@@ -81,3 +81,6 @@ github_banner:
 # Custom files
 custom_file_path:
   style: source/_data/styles.styl
+
+# Excerpt Settings
+excerpt_description: true

@@ -3,11 +3,10 @@ title: Markdown 语法速查
 date: 2026-06-08 12:00:00
 categories: [教程]
 tags: [markdown, 写作, 工具]
+description: Markdown 常用语法速查表：标题、文字、代码、表格，写文章必备。
 ---
 
 Markdown 是一种轻量级标记语言，用纯文本格式编写文档，广泛应用于博客、文档、笔记等场景。
-
-<!-- more -->
 
 ## 标题
 
