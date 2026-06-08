@@ -2,7 +2,6 @@
 title: 搭建个人 Wiki 知识库
 date: 2026-06-08 10:00:00
 categories: [教程, 工具]
-tags: [wiki, hexo, github-pages, 知识库, 部署]
 description: 基于 Hexo + NexT + GitHub Pages 搭建个人知识库的完整指南，涵盖环境配置、主题安装、自动部署及日常维护。
 ---
 
@@ -312,7 +311,6 @@ hexo generate    # 重新编译至 public/ 目录
 title: 文章标题
 date: 2026-06-08 12:00:00
 categories: [一级分类, 子分类]
-tags: [标签1, 标签2]
 description: 文章概述，显示于首页标题下方，建议控制在两句话以内。
 ---
 ```
@@ -327,7 +325,7 @@ description: 文章概述，显示于首页标题下方，建议控制在两句�
 
 ### 文章模板
 
-`hexo new` 命令使用 `scaffolds/post.md` 作为模板生成文件。可编辑该模板，预设常用的 categories 或 tags，减少重复填写。
+`hexo new` 命令使用 `scaffolds/post.md` 作为模板生成文件。可编辑该模板，预设常用的 categories，减少重复填写。
 
 ---
 
