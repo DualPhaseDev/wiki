@@ -15,6 +15,8 @@ tags: [wiki, hexo, github-pages, 知识库, mkdocs, 部署]
 本地 D:\wiki (Markdown) → git push → GitHub Actions → DualPhaseDev.github.io/wiki
 ```
 
+<!-- more -->
+
 ---
 
 ## 第一部分：人工搭建流程
