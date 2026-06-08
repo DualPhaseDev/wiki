@@ -1,0 +1,81 @@
+# NexT Theme Configuration
+# Docs: https://theme-next.js.org/docs/theme-settings/
+
+# Scheme Selection
+# Muse | Mist | Pisces | Gemini
+scheme: Pisces
+
+# Dark Mode
+darkmode: true
+
+# Favicon
+favicon:
+  small: /images/favicon-16x16-next.png
+  medium: /images/favicon-32x32-next.png
+
+# Footer
+footer:
+  powered: false
+  copyright: true
+
+# Menu
+menu:
+  home: / || fa fa-home
+  archives: /archives/ || fa fa-archive
+  tags: /tags/ || fa fa-tags
+  categories: /categories/ || fa fa-th
+  about: /about/ || fa fa-user
+
+# Sidebar
+sidebar:
+  position: left
+  display: post
+
+# Avatar
+avatar:
+  url: # 留空，以后可以加头像
+
+# Social Links
+social:
+  GitHub: https://github.com/DualPhaseDev || fab fa-github
+
+# TOC (Table of Contents)
+toc:
+  enable: true
+  number: true
+  wrap: true
+  max_depth: 6
+
+# Creative Commons
+creative_commons:
+  license: by-nc-sa
+  sidebar: false
+  post: true
+
+# Code Highlight
+codeblock:
+  highlight_theme: normal
+  copy_button:
+    enable: true
+    show_result: true
+    style: flat
+
+# Back to Top
+back2top:
+  enable: true
+  sidebar: false
+  scrollpercent: false
+
+# Reading Progress
+reading_progress:
+  enable: true
+  color: "#37c6c0"
+  height: 2px
+
+# Bookmark
+bookmark:
+  enable: false
+
+# GitHub Banner
+github_banner:
+  enable: false
