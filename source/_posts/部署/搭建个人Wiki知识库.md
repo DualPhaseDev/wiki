@@ -1,7 +1,7 @@
 ---
 title: 搭建个人 Wiki 知识库
 date: 2026-06-08 10:00:00
-categories: [教程, 工具]
+categories: [部署]
 description: 基于 Hexo + NexT + GitHub Pages 搭建个人知识库的完整指南，涵盖环境配置、主题安装、自动部署及日常维护。
 ---
 
@@ -105,7 +105,7 @@ theme: next
 ```yaml
 title: 个人学习 Wiki
 subtitle: 日拱一卒，功不唐捐
-description: 编程、AI、科学、人文 —— 个人学习知识库
+description: 个人学习知识库
 author: 你的名称
 language: zh-CN
 timezone: 'Asia/Shanghai'
