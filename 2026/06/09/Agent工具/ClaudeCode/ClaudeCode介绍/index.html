@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/wiki/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/wiki/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/wiki/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/wiki/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/wiki/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"dualphasedev.github.io","root":"/wiki/","images":"/wiki/images","scheme":"Pisces","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"highlight_theme":"normal"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/wiki/js/config.js" defer></script>
+
+    <meta name="description" content="Claude Code 是 Anthropic 推出的终端 AI 编程协作工具，支持项目级代码理解、多文件编辑与自动化工作流。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Claude Code 介绍">
+<meta property="og:url" content="https://dualphasedev.github.io/wiki/2026/06/09/Agent%E5%B7%A5%E5%85%B7/ClaudeCode/ClaudeCode%E4%BB%8B%E7%BB%8D/index.html">
+<meta property="og:site_name" content="个人学习 Wiki">
+<meta property="og:description" content="Claude Code 是 Anthropic 推出的终端 AI 编程协作工具，支持项目级代码理解、多文件编辑与自动化工作流。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://dualphasedev.github.io/images/image-20260609154243041.png">
+<meta property="og:image" content="https://dualphasedev.github.io/images/image-20260609155443464.png">
+<meta property="article:published_time" content="2026-06-09T07:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-13T08:24:32.014Z">
+<meta property="article:author" content="DualPhaseDev">
+<meta property="article:tag" content="wiki,学习,知识库,编程,AI">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dualphasedev.github.io/images/image-20260609154243041.png">
+
+
+<link rel="canonical" href="https://dualphasedev.github.io/wiki/2026/06/09/Agent%E5%B7%A5%E5%85%B7/ClaudeCode/ClaudeCode%E4%BB%8B%E7%BB%8D/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://dualphasedev.github.io/wiki/2026/06/09/Agent%E5%B7%A5%E5%85%B7/ClaudeCode/ClaudeCode%E4%BB%8B%E7%BB%8D/","path":"2026/06/09/Agent工具/ClaudeCode/ClaudeCode介绍/","title":"Claude Code 介绍"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Claude Code 介绍 | 个人学习 Wiki</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/wiki/js/utils.js" defer></script><script src="/wiki/js/motion.js" defer></script><script src="/wiki/js/sidebar.js" defer></script><script src="/wiki/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/wiki/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/wiki/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">个人学习 Wiki</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">日拱一卒，功不唐捐</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/wiki/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-categories"><a href="/wiki/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-about"><a href="/wiki/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD%E7%89%B9%E6%80%A7"><span class="nav-number">2.</span> <span class="nav-text">功能特性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E7%90%86%E8%A7%A3%E4%B8%8E%E8%A7%A3%E9%87%8A"><span class="nav-number">2.1.</span> <span class="nav-text">代码理解与解释</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E6%96%87%E4%BB%B6%E4%B8%8A%E4%B8%8B%E6%96%87%E5%88%86%E6%9E%90"><span class="nav-number">2.2.</span> <span class="nav-text">多文件上下文分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E7%A8%8B%E7%BA%A7%E4%BB%A3%E7%A0%81%E4%BF%AE%E6%94%B9"><span class="nav-number">2.3.</span> <span class="nav-text">工程级代码修改</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Skills-%E6%89%A9%E5%B1%95%E8%83%BD%E5%8A%9B"><span class="nav-number">2.4.</span> <span class="nav-text">Skills 扩展能力</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B1%80%E9%99%90%E6%80%A7"><span class="nav-number">3.</span> <span class="nav-text">局限性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="nav-number">4.</span> <span class="nav-text">工作原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-number">4.1.</span> <span class="nav-text">工作流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B"><span class="nav-number">4.2.</span> <span class="nav-text">模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E5%85%B7"><span class="nav-number">4.3.</span> <span class="nav-text">工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BF%E9%97%AE%E8%8C%83%E5%9B%B4"><span class="nav-number">4.4.</span> <span class="nav-text">访问范围</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%A8%E5%88%86%E6%94%AF%E5%B7%A5%E4%BD%9C"><span class="nav-number">4.5.</span> <span class="nav-text">跨分支工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3"><span class="nav-number">4.6.</span> <span class="nav-text">上下文窗口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6"><span class="nav-number">4.7.</span> <span class="nav-text">安全机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%BB%BA%E8%AE%AE"><span class="nav-number">4.8.</span> <span class="nav-text">使用建议</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">5.</span> <span class="nav-text">参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">DualPhaseDev</p>
+  <div class="site-description" itemprop="description">个人学习知识库</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/wiki/archives/">
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/wiki/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/DualPhaseDev" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;DualPhaseDev" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://dualphasedev.github.io/wiki/2026/06/09/Agent%E5%B7%A5%E5%85%B7/ClaudeCode/ClaudeCode%E4%BB%8B%E7%BB%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/wiki/images/avatar.gif">
+      <meta itemprop="name" content="DualPhaseDev">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人学习 Wiki">
+      <meta itemprop="description" content="个人学习知识库">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Claude Code 介绍 | 个人学习 Wiki">
+      <meta itemprop="description" content="Claude Code 是 Anthropic 推出的终端 AI 编程协作工具，支持项目级代码理解、多文件编辑与自动化工作流。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Claude Code 介绍
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-06-09 15:00:00" itemprop="dateCreated datePublished" datetime="2026-06-09T15:00:00+08:00">2026-06-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-06-13 16:24:32" itemprop="dateModified" datetime="2026-06-13T16:24:32+08:00">2026-06-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/wiki/categories/Agent%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">Agent工具</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/wiki/categories/Agent%E5%B7%A5%E5%85%B7/ClaudeCode/" itemprop="url" rel="index"><span itemprop="name">ClaudeCode</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Claude Code 是 Anthropic 推出的终端 AI 编程协作工具，支持项目级代码理解、多文件编辑与自动化工作流。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Claude Code 是 Anthropic 推出的面向开发者的 AI 编程协作工具。与网页版 Claude 不同，Claude Code 在终端中运行，能够读取项目代码、理解文件间关系、直接修改文件并执行指令。</p>
+<p>核心特征：</p>
+<ul>
+<li><strong>上下文感知</strong>：理解整个项目结构，而非单一文件</li>
+<li><strong>工程化导向</strong>：关注可维护性、规范与测试</li>
+<li><strong>可定制行为</strong>：通过 Skills（技能包）定义特定编码规则</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>Claude（网页版）</th>
+<th>Claude Code</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>运行环境</td>
+<td>浏览器</td>
+<td>终端</td>
+</tr>
+<tr>
+<td>交互方式</td>
+<td>复制代码片段提问</td>
+<td>直接访问项目文件系统</td>
+</tr>
+<tr>
+<td>代码修改</td>
+<td>仅提供建议</td>
+<td>可直接编辑文件</td>
+</tr>
+<tr>
+<td>项目理解</td>
+<td>仅限粘贴内容</td>
+<td>理解完整项目结构</td>
+</tr>
+</tbody></table>
+<h2 id="功能特性"><a href="#功能特性" class="headerlink" title="功能特性"></a>功能特性</h2><h3 id="代码理解与解释"><a href="#代码理解与解释" class="headerlink" title="代码理解与解释"></a>代码理解与解释</h3><p>支持以下查询类型：</p>
+<ul>
+<li>函数功能与逻辑分析</li>
+<li>错误原因定位</li>
+<li>性能瓶颈识别</li>
+</ul>
+<p>Claude Code 结合项目上下文给出解释，而非孤立分析代码片段。</p>
+<h3 id="多文件上下文分析"><a href="#多文件上下文分析" class="headerlink" title="多文件上下文分析"></a>多文件上下文分析</h3><p>区别于单文件代码补全工具，Claude Code 能够理解：</p>
+<ul>
+<li>函数调用关系与引用链</li>
+<li>模块依赖拓扑</li>
+<li>项目整体架构</li>
+</ul>
+<h3 id="工程级代码修改"><a href="#工程级代码修改" class="headerlink" title="工程级代码修改"></a>工程级代码修改</h3><p>支持批量代码重构指令，例如：</p>
+<ul>
+<li>将 <code>var</code> 声明统一替换为 <code>let</code></li>
+<li>拆分长函数为多个子函数</li>
+<li>为接口批量添加错误处理</li>
+</ul>
+<p>Claude Code 直接修改源文件，而非仅输出建议。</p>
+<h3 id="Skills-扩展能力"><a href="#Skills-扩展能力" class="headerlink" title="Skills 扩展能力"></a>Skills 扩展能力</h3><p>Skills 是 Claude Code 的核心扩展机制，允许开发者将编码习惯与团队规则注入 AI 行为。典型场景：</p>
+<ul>
+<li>强制函数注释规范</li>
+<li>约束 API 响应格式</li>
+<li>要求测试用例覆盖边界条件</li>
+</ul>
+<h2 id="局限性"><a href="#局限性" class="headerlink" title="局限性"></a>局限性</h2><p>Claude Code 在以下场景存在限制：</p>
+<ul>
+<li>技术决策的最终判断需由开发者确认</li>
+<li>生成代码无法保证 100% 无缺陷</li>
+<li>无法理解未被明确描述的业务语义</li>
+<li>不适用于开发者完全不理解代码逻辑的全自动接管</li>
+</ul>
+<h2 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h2><h3 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h3><p>Claude Code 以循环方式处理任务，每个循环包含三个阶段：</p>
+<ol>
+<li><strong>收集上下文</strong>：读取代码、文件、错误信息</li>
+<li><strong>执行操作</strong>：编辑文件、运行命令、搜索</li>
+<li><strong>验证结果</strong>：检查执行状态并决定是否调整</li>
+</ol>
+<p>三个阶段持续循环直至任务完成。用户可随时中断、调整方向或切换策略。</p>
+<p><img src="/wiki/../../../images/image-20260609154243041.png" alt="工作流程循环"></p>
+<p>该循环由模型和工具两大部分驱动。</p>
+<h3 id="模型"><a href="#模型" class="headerlink" title="模型"></a>模型</h3><p>Claude Code 使用 Anthropic 的 Claude 系列模型进行代码理解与任务规划。模型能够识别多种编程语言，理解项目结构，并将复杂任务拆解为可执行的子步骤。</p>
+<p>推荐模型选择：</p>
+<ul>
+<li><strong>Sonnet</strong>：适用于日常编码任务（速度快、性价比高）</li>
+<li><strong>Opus</strong>：适用于复杂架构设计与深度推理场景</li>
+</ul>
+<h3 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h3><p>Claude Code 内置五类工具：</p>
+<table>
+<thead>
+<tr>
+<th>工具类别</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>文件操作</td>
+<td>读取、编辑、创建、重命名文件</td>
+</tr>
+<tr>
+<td>搜索</td>
+<td>按文件名或正则表达式检索代码</td>
+</tr>
+<tr>
+<td>命令执行</td>
+<td>运行 npm、git、测试、服务启动等</td>
+</tr>
+<tr>
+<td>网络搜索</td>
+<td>查阅文档与错误信息</td>
+</tr>
+<tr>
+<td>代码智能</td>
+<td>类型检查、定义跳转、引用查找（需安装语言插件）</td>
+</tr>
+</tbody></table>
+<p>实际工作流示例（修复失败测试）：</p>
+<ol>
+<li>运行测试定位失败用例</li>
+<li>阅读错误日志</li>
+<li>搜索相关源文件</li>
+<li>分析代码逻辑</li>
+<li>修改代码</li>
+<li>重新运行测试验证</li>
+</ol>
+<h3 id="访问范围"><a href="#访问范围" class="headerlink" title="访问范围"></a>访问范围</h3><p>Claude Code 的可见范围包括：</p>
+<ul>
+<li>项目目录及其所有子文件</li>
+<li>终端可执行的任意命令（npm、git、构建工具等）</li>
+<li>当前 Git 状态（分支、未提交变更、提交历史）</li>
+<li><code>CLAUDE.md</code> 文件（项目专属规则定义）</li>
+<li>自动记忆（项目习惯记录，存于 <code>MEMORY.md</code> 前 200 行）</li>
+<li>MCP、Skills 等扩展配置</li>
+</ul>
+<h3 id="跨分支工作"><a href="#跨分支工作" class="headerlink" title="跨分支工作"></a>跨分支工作</h3><p>Claude Code 的会话与文件夹绑定，而非与 Git 分支绑定。实际效果：</p>
+<ul>
+<li>切换分支（<code>git checkout</code> &#x2F; <code>git switch</code>）后，Claude Code 自动读取新分支文件</li>
+<li>聊天记录在分支切换后保持不变，上下文不丢失</li>
+<li>同一文件夹下的不同分支共享会话历史</li>
+</ul>
+<p>多分支并行开发建议：使用 <code>git worktrees</code> 为每个分支创建独立目录，各分支拥有完全隔离的对话记录，互不干扰。</p>
+<p><img src="/wiki/../../../images/image-20260609155443464.png" alt="跨分支工作示意"></p>
+<h3 id="上下文窗口"><a href="#上下文窗口" class="headerlink" title="上下文窗口"></a>上下文窗口</h3><p>Claude Code 存在上下文容量限制。接近上限时的处理方式：</p>
+<ul>
+<li>自动压缩旧内容</li>
+<li>通过 <code>/compact</code> 手动压缩</li>
+<li>通过 <code>/context</code> 查看当前占用情况</li>
+</ul>
+<p>减少上下文占用的策略：</p>
+<ul>
+<li>将重要规则写入 <code>CLAUDE.md</code></li>
+<li>使用 Skills 和 Subagents 减少不必要的内容注入</li>
+</ul>
+<h3 id="安全机制"><a href="#安全机制" class="headerlink" title="安全机制"></a>安全机制</h3><p><strong>检查点</strong>：Claude Code 修改文件前自动创建备份。双击 Esc 或输入撤销指令即可回退至修改前状态。</p>
+<p><strong>权限模式</strong>（Shift + Tab 快速切换）：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>默认</td>
+<td>文件修改与命令执行均需确认</td>
+</tr>
+<tr>
+<td>自动接受编辑</td>
+<td>文件修改无需确认，命令仍需确认</td>
+</tr>
+<tr>
+<td>计划模式</td>
+<td>仅分析与规划，不执行实际操作</td>
+</tr>
+</tbody></table>
+<p>可在 <code>.claude/settings.json</code> 中将特定命令加入白名单（如 <code>npm test</code>），跳过确认步骤。</p>
+<h3 id="使用建议"><a href="#使用建议" class="headerlink" title="使用建议"></a>使用建议</h3><ol>
+<li>向 Claude Code 询问自身用法：输入 <code>/init</code> 或具体问题获取引导</li>
+<li>采用对话式交互：先描述大致需求，根据结果迭代修正，无需每次重写完整提示</li>
+<li>随时中断：方向偏离时直接输入新指令，Claude Code 立即调整</li>
+<li>提供具体提示。错误示例：”修复登录错误”。正确示例：”持卡人过期的用户结账流程异常，检查 <code>src/payments/</code> 目录，重点关注令牌刷新逻辑，先编写失败测试再修复”</li>
+<li>要求自行验证：附带测试用例或预期结果，Claude Code 执行后自动确认</li>
+<li>先探索后实现：使用计划模式（Shift+Tab 两次）分析代码库并输出完整计划，审核通过后再执行</li>
+</ol>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.runoob.com/claude-code/claude-code-tutorial.html">菜鸟教程 — Claude Code 教程</a></li>
+<li><a target="_blank" rel="noopener" href="https://code.claude.com/docs/zh-CN/overview">Claude Code 中文官方文档</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>DualPhaseDev
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://dualphasedev.github.io/wiki/2026/06/09/Agent%E5%B7%A5%E5%85%B7/ClaudeCode/ClaudeCode%E4%BB%8B%E7%BB%8D/" title="Claude Code 介绍">https://dualphasedev.github.io/wiki/2026/06/09/Agent工具/ClaudeCode/ClaudeCode介绍/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/wiki/2026/06/08/%E9%83%A8%E7%BD%B2/%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BAWiki%E7%9F%A5%E8%AF%86%E5%BA%93/" rel="prev" title="搭建个人 Wiki 知识库">
+                  <i class="fa fa-angle-left"></i> 搭建个人 Wiki 知识库
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">true</span>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
