@@ -98,6 +98,13 @@ ignore:
 ## Themes: https://hexo.io/themes/
 theme: next
 
+# Local Search (hexo-generator-searchdb)
+search:
+  path: search.xml
+  field: post
+  content: true
+  limit: 10000
+
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
