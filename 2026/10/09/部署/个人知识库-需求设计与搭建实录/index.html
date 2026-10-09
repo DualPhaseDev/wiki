@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/wiki/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/wiki/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/wiki/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/wiki/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/wiki/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"dualphasedev.github.io","root":"/wiki/","images":"/wiki/images","scheme":"Pisces","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"highlight_theme":"normal"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/wiki/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/wiki/js/config.js" defer></script>
+
+    <meta name="description" content="一个 AI 驱动的个人知识库的完整方案：三层内容架构、读写分离、可切换模型的生产线，以及基于 Hexo + NexT + GitHub Pages 的底座搭建全流程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="个人知识库：需求设计与搭建实录">
+<meta property="og:url" content="https://dualphasedev.github.io/wiki/2026/10/09/%E9%83%A8%E7%BD%B2/%E4%B8%AA%E4%BA%BA%E7%9F%A5%E8%AF%86%E5%BA%93-%E9%9C%80%E6%B1%82%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%90%AD%E5%BB%BA%E5%AE%9E%E5%BD%95/index.html">
+<meta property="og:site_name" content="个人学习 Wiki">
+<meta property="og:description" content="一个 AI 驱动的个人知识库的完整方案：三层内容架构、读写分离、可切换模型的生产线，以及基于 Hexo + NexT + GitHub Pages 的底座搭建全流程。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-09T08:50:00.000Z">
+<meta property="article:modified_time" content="2026-10-09T09:29:49.595Z">
+<meta property="article:author" content="DualPhaseDev">
+<meta property="article:tag" content="wiki,学习,知识库,编程,AI">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://dualphasedev.github.io/wiki/2026/10/09/%E9%83%A8%E7%BD%B2/%E4%B8%AA%E4%BA%BA%E7%9F%A5%E8%AF%86%E5%BA%93-%E9%9C%80%E6%B1%82%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%90%AD%E5%BB%BA%E5%AE%9E%E5%BD%95/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://dualphasedev.github.io/wiki/2026/10/09/%E9%83%A8%E7%BD%B2/%E4%B8%AA%E4%BA%BA%E7%9F%A5%E8%AF%86%E5%BA%93-%E9%9C%80%E6%B1%82%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%90%AD%E5%BB%BA%E5%AE%9E%E5%BD%95/","path":"2026/10/09/部署/个人知识库-需求设计与搭建实录/","title":"个人知识库：需求设计与搭建实录"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>个人知识库：需求设计与搭建实录 | 个人学习 Wiki</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/wiki/js/utils.js" defer></script><script src="/wiki/js/motion.js" defer></script><script src="/wiki/js/sidebar.js" defer></script><script src="/wiki/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/wiki/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/wiki/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/wiki/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">个人学习 Wiki</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">日拱一卒，功不唐捐</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/wiki/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-categories"><a href="/wiki/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-about"><a href="/wiki/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8A%E7%AF%87-%C2%B7-%E9%9C%80%E6%B1%82%E8%AE%BE%E8%AE%A1"><span class="nav-number">1.</span> <span class="nav-text">上篇 · 需求设计</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E8%83%8C%E6%99%AF%E4%B8%8E%E7%9B%AE%E6%A0%87"><span class="nav-number">1.1.</span> <span class="nav-text">1. 背景与目标</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%80%BB%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="nav-number">1.2.</span> <span class="nav-text">2. 总体架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E5%86%B3%E7%AD%96"><span class="nav-number">1.2.1.</span> <span class="nav-text">关键决策</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E4%BB%93%E5%BA%93%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84"><span class="nav-number">1.2.2.</span> <span class="nav-text">单仓库目录结构</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E7%AC%AC-1-%E5%B1%82%EF%BC%9A%E5%8E%9F%E5%A7%8B%E8%B5%84%E6%96%99%E5%B1%82%EF%BC%88sources-%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">3. 第 1 层：原始资料层（sources&#x2F;）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%85%A8%E6%96%87%E5%AD%98%E6%A1%A3%EF%BC%88%E8%B5%84%E6%96%99%E9%A9%B1%E5%8A%A8%E5%85%A5%E5%8F%A3%E4%B8%93%E7%94%A8%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 全文存档（资料驱动入口专用）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%91%98%E5%BD%95%E5%8D%A1%EF%BC%88%E7%A0%94%E7%A9%B6%E5%85%A5%E5%BA%93%E5%85%A5%E5%8F%A3%E4%B8%93%E7%94%A8%EF%BC%89"><span class="nav-number">1.3.2.</span> <span class="nav-text">3.2 摘录卡（研究入库入口专用）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%AC%AC-2-%E5%B1%82%EF%BC%9A%E8%AF%8D%E6%9D%A1%E5%B1%82"><span class="nav-number">1.4.</span> <span class="nav-text">4. 第 2 层：词条层</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E8%AF%8D%E6%9D%A1%E6%A8%A1%E6%9D%BF%EF%BC%88%E5%9B%BA%E5%AE%9A%E7%BB%93%E6%9E%84%EF%BC%8C%E4%BE%9B-AI-%E5%92%8C%E8%84%9A%E6%9C%AC%E8%A7%A3%E6%9E%90%EF%BC%89"><span class="nav-number">1.4.1.</span> <span class="nav-text">4.1 词条模板（固定结构，供 AI 和脚本解析）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E5%85%A5%E5%BA%93%E6%B5%81%E7%A8%8B%EF%BC%88%E6%96%B0%E8%B5%84%E6%96%99%E8%BF%9B%E6%9D%A5%E6%97%B6-AI-%E7%9A%84%E5%A4%84%E7%90%86%E9%A1%BA%E5%BA%8F%EF%BC%89"><span class="nav-number">1.4.2.</span> <span class="nav-text">4.2 入库流程（新资料进来时 AI 的处理顺序）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-%E4%B8%A4%E7%A7%8D%E5%85%A5%E5%BA%93%E8%A7%A6%E5%8F%91%E6%96%B9%E5%BC%8F"><span class="nav-number">1.4.3.</span> <span class="nav-text">4.3 两种入库触发方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-%E9%98%B2%E8%86%A8%E8%83%80%E4%B8%8E%E9%98%B2%E9%87%8D%E5%A4%8D%E6%9C%BA%E5%88%B6"><span class="nav-number">1.4.4.</span> <span class="nav-text">4.4 防膨胀与防重复机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-%E5%9B%9E%E7%AD%94%E9%97%AE%E9%A2%98%E7%9A%84%E8%A7%84%E7%9F%A9%EF%BC%88%E5%8A%A1%E5%AE%9E%E6%B4%BE%EF%BC%89"><span class="nav-number">1.4.5.</span> <span class="nav-text">4.5 回答问题的规矩（务实派）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-6-%E5%AD%98%E9%87%8F%E6%97%A7%E6%96%87%E5%A4%84%E7%90%86%E5%8E%9F%E5%88%99"><span class="nav-number">1.4.6.</span> <span class="nav-text">4.6 存量旧文处理原则</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E7%AC%AC-3-%E5%B1%82%EF%BC%9A%E8%A7%84%E5%88%99%E6%96%87%E4%BB%B6-Skill-%E5%B0%81%E8%A3%85"><span class="nav-number">1.5.</span> <span class="nav-text">5. 第 3 层：规则文件 + Skill 封装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-skill-%E5%8C%85%E7%BB%93%E6%9E%84"><span class="nav-number">1.5.1.</span> <span class="nav-text">5.1 skill 包结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-constitution-md%EF%BC%88%E7%BB%84%E7%BB%87%E5%AE%AA%E6%B3%95%EF%BC%8C%E7%9B%B8%E5%AF%B9%E7%A8%B3%E5%AE%9A%EF%BC%89"><span class="nav-number">1.5.2.</span> <span class="nav-text">5.2 constitution.md（组织宪法，相对稳定）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-style-profile-md%EF%BC%88%E9%A3%8E%E6%A0%BC%E6%A1%A3%E6%A1%88%EF%BC%8C%E6%8C%81%E7%BB%AD%E6%BC%94%E5%8C%96%EF%BC%89"><span class="nav-number">1.5.3.</span> <span class="nav-text">5.3 style-profile.md（风格档案，持续演化）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E5%B7%A5%E5%85%B7%E9%93%BE%E4%B8%8E%E4%BD%BF%E7%94%A8%E5%85%A5%E5%8F%A3"><span class="nav-number">1.6.</span> <span class="nav-text">6. 工具链与使用入口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E4%BD%BF%E7%94%A8%E5%85%A5%E5%8F%A3%EF%BC%88%E6%97%A5%E5%B8%B8%E6%8E%A5%E8%A7%A6%E9%9D%A2%EF%BC%8C%E6%8C%89%E4%BC%98%E5%85%88%E7%BA%A7%EF%BC%89"><span class="nav-number">1.6.1.</span> <span class="nav-text">6.1 使用入口（日常接触面，按优先级）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-%E9%85%8D%E7%BD%AE%EF%BC%88config-yaml%EF%BC%89"><span class="nav-number">1.6.2.</span> <span class="nav-text">6.2 配置（config.yaml）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-%E5%8A%9F%E8%83%BD%E5%91%BD%E4%BB%A4%EF%BC%88%E5%BA%95%E5%B1%82%E7%AE%A1%E9%81%93%EF%BC%89"><span class="nav-number">1.6.3.</span> <span class="nav-text">6.3 功能命令（底层管道）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-4-%E4%BD%93%E6%A3%80%E7%9A%84%E4%B8%A4%E4%B8%AA%E9%98%B6%E6%AE%B5"><span class="nav-number">1.6.4.</span> <span class="nav-text">6.4 体检的两个阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-5-%E7%BD%91%E9%A1%B5%E4%BD%93%E6%A3%80%E6%8C%89%E9%92%AE"><span class="nav-number">1.6.5.</span> <span class="nav-text">6.5 网页体检按钮</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B"><span class="nav-number">1.7.</span> <span class="nav-text">7. 技术选型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E9%9D%9E%E7%9B%AE%E6%A0%87%EF%BC%88%E6%9C%AC%E9%98%B6%E6%AE%B5%E4%B8%8D%E5%81%9A%EF%BC%89"><span class="nav-number">1.8.</span> <span class="nav-text">8. 非目标（本阶段不做）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E9%87%8C%E7%A8%8B%E7%A2%91"><span class="nav-number">1.9.</span> <span class="nav-text">9. 里程碑</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8B%E7%AF%87-%C2%B7-%E5%BA%95%E5%BA%A7%E6%90%AD%E5%BB%BA%E5%AE%9E%E6%93%8D%EF%BC%88Hexo-NexT-GitHub-Pages%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">下篇 · 底座搭建实操（Hexo + NexT + GitHub Pages）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#10-%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-number">2.1.</span> <span class="nav-text">10. 环境准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Node-js"><span class="nav-number">2.1.1.</span> <span class="nav-text">Node.js</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Git"><span class="nav-number">2.1.2.</span> <span class="nav-text">Git</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GitHub-%E8%B4%A6%E5%8F%B7"><span class="nav-number">2.1.3.</span> <span class="nav-text">GitHub 账号</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-%E5%AE%89%E8%A3%85-Hexo"><span class="nav-number">2.2.</span> <span class="nav-text">11. 安装 Hexo</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#12-%E5%88%9D%E5%A7%8B%E5%8C%96%E9%A1%B9%E7%9B%AE"><span class="nav-number">2.3.</span> <span class="nav-text">12. 初始化项目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#13-%E5%AE%89%E8%A3%85-NexT-%E4%B8%BB%E9%A2%98"><span class="nav-number">2.4.</span> <span class="nav-text">13. 安装 NexT 主题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#14-%E9%85%8D%E7%BD%AE%E7%AB%99%E7%82%B9%E4%BF%A1%E6%81%AF"><span class="nav-number">2.5.</span> <span class="nav-text">14. 配置站点信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#15-%E9%85%8D%E7%BD%AE-NexT-%E4%B8%BB%E9%A2%98"><span class="nav-number">2.6.</span> <span class="nav-text">15. 配置 NexT 主题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Scheme-%E9%80%89%E6%8B%A9"><span class="nav-number">2.6.1.</span> <span class="nav-text">Scheme 选择</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#16-%E6%9C%AC%E5%9C%B0%E9%A2%84%E8%A7%88"><span class="nav-number">2.7.</span> <span class="nav-text">16. 本地预览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#17-%E5%88%9B%E5%BB%BA-GitHub-%E4%BB%93%E5%BA%93"><span class="nav-number">2.8.</span> <span class="nav-text">17. 创建 GitHub 仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#18-%E9%85%8D%E7%BD%AE%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2"><span class="nav-number">2.9.</span> <span class="nav-text">18. 配置自动部署</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#19-%E6%8E%A8%E9%80%81%E5%B9%B6%E5%90%AF%E7%94%A8-Pages"><span class="nav-number">2.10.</span> <span class="nav-text">19. 推送并启用 Pages</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20-%E6%97%A5%E5%B8%B8%E5%86%99%E4%BD%9C%E4%B8%8E%E7%BB%B4%E6%8A%A4"><span class="nav-number">2.11.</span> <span class="nav-text">20. 日常写作与维护</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E5%B8%B8%E5%86%99%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-number">2.11.1.</span> <span class="nav-text">日常写作流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%8B%E5%8A%A8%E7%BC%96%E8%AF%91"><span class="nav-number">2.11.2.</span> <span class="nav-text">手动编译</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#21-%E6%96%87%E7%AB%A0%E7%BC%96%E5%86%99%E8%A7%84%E8%8C%83"><span class="nav-number">2.12.</span> <span class="nav-text">21. 文章编写规范</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="nav-number">2.12.1.</span> <span class="nav-text">文件格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Frontmatter"><span class="nav-number">2.12.2.</span> <span class="nav-text">Frontmatter</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E7%AB%A0%E6%A8%A1%E6%9D%BF"><span class="nav-number">2.12.3.</span> <span class="nav-text">文章模板</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#22-Windows-%E7%8E%AF%E5%A2%83%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">2.13.</span> <span class="nav-text">22. Windows 环境注意事项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%84%E5%BD%95%EF%BC%9A%E4%BD%BF%E7%94%A8-AI-%E9%87%8D%E5%BB%BA%E5%BA%95%E5%BA%A7"><span class="nav-number">2.14.</span> <span class="nav-text">附录：使用 AI 重建底座</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4%E6%8F%90%E7%A4%BA%E8%AF%AD"><span class="nav-number">2.14.1.</span> <span class="nav-text">完整提示语</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E5%8C%96%E6%8F%90%E7%A4%BA%E8%AF%AD"><span class="nav-number">2.14.2.</span> <span class="nav-text">简化提示语</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">2.15.</span> <span class="nav-text">参考链接</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">DualPhaseDev</p>
+  <div class="site-description" itemprop="description">个人学习知识库</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/wiki/archives/">
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/wiki/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/DualPhaseDev" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;DualPhaseDev" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://dualphasedev.github.io/wiki/2026/10/09/%E9%83%A8%E7%BD%B2/%E4%B8%AA%E4%BA%BA%E7%9F%A5%E8%AF%86%E5%BA%93-%E9%9C%80%E6%B1%82%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%90%AD%E5%BB%BA%E5%AE%9E%E5%BD%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/wiki/images/avatar.gif">
+      <meta itemprop="name" content="DualPhaseDev">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人学习 Wiki">
+      <meta itemprop="description" content="个人学习知识库">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="个人知识库：需求设计与搭建实录 | 个人学习 Wiki">
+      <meta itemprop="description" content="一个 AI 驱动的个人知识库的完整方案：三层内容架构、读写分离、可切换模型的生产线，以及基于 Hexo + NexT + GitHub Pages 的底座搭建全流程。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          个人知识库：需求设计与搭建实录
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-10-09 16:50:00 / 修改时间：17:29:49" itemprop="dateCreated datePublished" datetime="2026-10-09T16:50:00+08:00">2026-10-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/wiki/categories/%E9%83%A8%E7%BD%B2/" itemprop="url" rel="index"><span itemprop="name">部署</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">一个 AI 驱动的个人知识库的完整方案：三层内容架构、读写分离、可切换模型的生产线，以及基于 Hexo + NexT + GitHub Pages 的底座搭建全流程。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>本文由两部分合并而成：上半部分是知识库的<strong>需求设计</strong>（已定稿 v1.0），下半部分是博客底座的<strong>搭建实操</strong>（Hexo + NexT + GitHub Pages）。</p>
+</blockquote>
+<hr>
+<h1 id="上篇-·-需求设计"><a href="#上篇-·-需求设计" class="headerlink" title="上篇 · 需求设计"></a>上篇 · 需求设计</h1><h2 id="1-背景与目标"><a href="#1-背景与目标" class="headerlink" title="1. 背景与目标"></a>1. 背景与目标</h2><p>搭建一个个人知识库，承载两类内容：<strong>技术学习笔记</strong>与<strong>业界内容洞察</strong>。</p>
+<p>核心诉求（按优先级）：</p>
+<ol>
+<li><strong>快速</strong>：丢链接 &#x2F; 粘文字 &#x2F; 扔 PDF，都能快速变成合格的知识库文档</li>
+<li><strong>高质量</strong>：内容准确、有出处、结构统一</li>
+<li><strong>合心意</strong>：通过”风格学习循环”让 AI 逐步学会使用者的偏好，后期一步到位</li>
+<li><strong>不绑死</strong>：不依赖特定 AI 应用，通过可配置的 API 调用，模型可自由切换</li>
+</ol>
+<h2 id="2-总体架构"><a href="#2-总体架构" class="headerlink" title="2. 总体架构"></a>2. 总体架构</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">        写入侧（生产线）                    读取侧（消费线）</span><br><span class="line">┌───────────────────────────┐      ┌───────────────────────────┐</span><br><span class="line">│ kb ingest / learn / check │      │  Hexo + NexT 静态博客      │</span><br><span class="line">│ skill 包（SKILL.md+规则）   │      │  分类/归档+本地搜索+词条跳转│</span><br><span class="line">│ 模型 API（OpenAI 兼容）    │      │  体检按钮 / 报告页          │</span><br><span class="line">└─────────────┬─────────────┘      └─────────────▲─────────────┘</span><br><span class="line">              │ 读写                              │ 只读</span><br><span class="line">              ▼                                   │</span><br><span class="line">┌─────────────────────────────────────────────────────┐</span><br><span class="line">│  GitHub 仓库 · 内容层（唯一事实来源，纯 Markdown）      │</span><br><span class="line">│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │</span><br><span class="line">│  │ 第1层        │  │ 第2层        │  │ 第3层        │  │</span><br><span class="line">│  │ 原始资料     │  │ 词条库       │  │ 规则文件     │  │</span><br><span class="line">│  │ sources/    │  │ source/     │  │ skill/rules/│  │</span><br><span class="line">│  │ （只读）     │  │ _posts/tech │  │ （宪法+风格） │  │</span><br><span class="line">│  │             │  │ _posts/ins… │  │             │  │</span><br><span class="line">│  └─────────────┘  └─────────────┘  └─────────────┘  │</span><br><span class="line">└─────────────────────────────────────────────────────┘</span><br><span class="line">         │  推代码触发 GitHub Actions 自动构建</span><br><span class="line">         ▼</span><br><span class="line">  GitHub Pages 发布</span><br></pre></td></tr></table></figure>
+
+<p><strong>架构原则：读写分离。</strong> 写入侧（skill + 脚本 + 模型 API）与读取侧（Hexo 网站）互不依赖，两侧都只依赖内容文件和规则文件：</p>
+<ul>
+<li>网站构建只读 <code>source/</code> 内容目录，不感知 AI、API、脚本的存在——删掉整个写入侧，网站照常构建</li>
+<li>写入侧不感知网站的存在——按规则文件操作 Markdown，写完推代码即自动触发构建</li>
+<li>由此获得双侧可替换性：展示方案（Hexo&#x2F;MkDocs&#x2F;Obsidian&#x2F;其他）和生产线（模型&#x2F;skill 平台）各自独立演进</li>
+<li><strong>仓库策略</strong>：初期单仓库 + 目录级隔离；日后可平滑拆分为内容仓库 + 工具仓库，届时内容层无需任何改动</li>
+</ul>
+<h3 id="关键决策"><a href="#关键决策" class="headerlink" title="关键决策"></a>关键决策</h3><table>
+<thead>
+<tr>
+<th>决策点</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>载体</td>
+<td>复用现有 Hexo 博客仓库（本地 <code>D:\wiki</code>，Hexo 8 + NexT 主题），发布到 GitHub Pages</td>
+</tr>
+<tr>
+<td>词条链接</td>
+<td>标准 Markdown 链接（仓库内直接可用；网站上经链接转换插件生效）</td>
+</tr>
+<tr>
+<td>词条写入</td>
+<td>AI 直接写入，含自动合并&#x2F;更新已有词条的权限</td>
+</tr>
+<tr>
+<td>回答规矩</td>
+<td>务实派：优先库内资料；库外知识可用，但必须标注”来自库外”</td>
+</tr>
+<tr>
+<td>内容分区</td>
+<td><code>source/_posts/tech/</code>（技术笔记）与 <code>source/_posts/insights/</code>（业界洞察），Hexo 按子目录自动归类，允许跨区互链</td>
+</tr>
+<tr>
+<td>体检方式</td>
+<td>网站上放”体检”按钮，触发 GitHub Actions 后台执行；语义检查默认关闭，手动开启</td>
+</tr>
+<tr>
+<td>生成方式</td>
+<td>模型 API（OpenAI 兼容接口）可配置切换，首个接入 Kimi；使用入口为 agent 对话 &#x2F; 本地网页对话 &#x2F; GitHub Issue，CLI 仅作底层管道</td>
+</tr>
+<tr>
+<td>仓库可见性</td>
+<td>公开（顺带获得免费 GitHub Pages 发布）</td>
+</tr>
+</tbody></table>
+<h3 id="单仓库目录结构"><a href="#单仓库目录结构" class="headerlink" title="单仓库目录结构"></a>单仓库目录结构</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">仓库根/（D:\wiki）</span><br><span class="line">├── sources/            # 第1层：原始资料（全文存档 + 摘录卡）——Hexo 不渲染此目录</span><br><span class="line">├── source/</span><br><span class="line">│   └── _posts/</span><br><span class="line">│       ├── tech/       # 第2层：技术笔记词条（Hexo 自动归类为 tech）</span><br><span class="line">│       └── insights/   # 第2层：业界洞察词条（Hexo 自动归类为 insights）</span><br><span class="line">├── skill/              # 第3层 + 生产线——Hexo 不渲染此目录</span><br><span class="line">│   ├── SKILL.md</span><br><span class="line">│   ├── rules/          # constitution.md + style-profile.md</span><br><span class="line">│   └── scripts/        # 工具源码：CLI + 网页对话界面 + 体检</span><br><span class="line">├── _config.yml         # Hexo 站点配置</span><br><span class="line">├── _config.next.yml    # NexT 主题配置</span><br><span class="line">├── package.json        # Hexo 依赖</span><br><span class="line">└── .github/workflows/  # 自动构建发布 + 体检按钮 + Issue 触发入库</span><br></pre></td></tr></table></figure>
+
+<p>不进仓库的三样东西：</p>
+<ul>
+<li><strong>API key</strong>：本地 <code>config.yaml</code> 被 git 忽略；Actions 用的那份存仓库 Secrets，永不入代码</li>
+<li><strong>网站成品</strong>：Pages 发布的是构建产物（HTML），由 Actions 生成，主分支只有 Markdown 源码</li>
+<li><strong>第三方依赖</strong>：构建时按依赖清单自动安装，不进仓库</li>
+</ul>
+<h2 id="3-第-1-层：原始资料层（sources-）"><a href="#3-第-1-层：原始资料层（sources-）" class="headerlink" title="3. 第 1 层：原始资料层（sources&#x2F;）"></a>3. 第 1 层：原始资料层（sources&#x2F;）</h2><p><strong>规矩：只读，一个字不改。本层的目的是”可溯源”，不是”全文收藏”——引用的内容能逐字对应到不可篡改的存档、能找回原始出处即可。</strong></p>
+<p>只读层分两种存档形态，按入库入口区分。</p>
+<h3 id="3-1-全文存档（资料驱动入口专用）"><a href="#3-1-全文存档（资料驱动入口专用）" class="headerlink" title="3.1 全文存档（资料驱动入口专用）"></a>3.1 全文存档（资料驱动入口专用）</h3><p>用户主动投喂的资料（链接&#x2F;文字&#x2F;PDF），原样全文保存：</p>
+<ul>
+<li>每份资料在文件头部记录元数据：标题、来源链接（如有）、收录日期、资料类型（链接&#x2F;文字&#x2F;文件）、用户备注（可选）</li>
+<li>网页类资料保存正文全文（不依赖原链接存活，防止日后失效）</li>
+<li>PDF 等二进制文件原样存放，另存一份提取出的纯文本供 AI 读取</li>
+<li>命名规范：<code>YYYY-MM-DD-资料标题.md</code>，禁止覆盖已有文件；同名冲突时追加序号</li>
+</ul>
+<h3 id="3-2-摘录卡（研究入库入口专用）"><a href="#3-2-摘录卡（研究入库入口专用）" class="headerlink" title="3.2 摘录卡（研究入库入口专用）"></a>3.2 摘录卡（研究入库入口专用）</h3><p>AI 检索收集的资料<strong>不存全文</strong>，只为词条实际引用的内容建立”摘录卡”：</p>
+<ul>
+<li>摘录卡内容：被引用的<strong>原文片段逐字摘录</strong>（一个字不改）+ 元数据（来源标题、原链接、收录日期、片段在原文中的位置&#x2F;上下文、资料类型标注”AI 检索收集”）</li>
+<li>命名规范：<code>YYYY-MM-DD-主题-序号.md</code></li>
+<li><strong>去重</strong>：同一来源已被收录过时，复用已有卡片，只追加新摘录，不重复存档</li>
+<li>原链接失效不影响库内可用性——引用文字已在卡内</li>
+<li>配置开关：<code>研究模式是否保留全文</code>，默认关闭</li>
+</ul>
+<h2 id="4-第-2-层：词条层"><a href="#4-第-2-层：词条层" class="headerlink" title="4. 第 2 层：词条层"></a>4. 第 2 层：词条层</h2><h3 id="4-1-词条模板（固定结构，供-AI-和脚本解析）"><a href="#4-1-词条模板（固定结构，供-AI-和脚本解析）" class="headerlink" title="4.1 词条模板（固定结构，供 AI 和脚本解析）"></a>4.1 词条模板（固定结构，供 AI 和脚本解析）</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="section"># 词条名</span></span><br><span class="line"></span><br><span class="line"><span class="quote">&gt; 一句话摘要（这个词条讲什么）</span></span><br><span class="line"></span><br><span class="line"><span class="section">## 核心内容</span></span><br><span class="line"></span><br><span class="line">（正文，可含小节、代码块、表格；直接引用原文的句子句尾标来源编号 [1]）</span><br><span class="line"></span><br><span class="line"><span class="section">## 关联词条</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">-</span> [<span class="string">相关词条A</span>](<span class="link">../路径/a.md</span>) — 关联原因一句话</span><br><span class="line">（允许为空，但区块标题必须保留）</span><br><span class="line"></span><br><span class="line"><span class="section">## 出处</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">-</span> [1] 原始资料标题，<span class="code">`sources/2026-xx-xx-xxx.md`</span>，收录日期，原链接</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-入库流程（新资料进来时-AI-的处理顺序）"><a href="#4-2-入库流程（新资料进来时-AI-的处理顺序）" class="headerlink" title="4.2 入库流程（新资料进来时 AI 的处理顺序）"></a>4.2 入库流程（新资料进来时 AI 的处理顺序）</h3><ol>
+<li>读取第 3 层规则文件和风格档案</li>
+<li>将原始资料存入 <code>sources/</code>（只读层；资料驱动入口存全文，研究入库入口建摘录卡）</li>
+<li><strong>先查重</strong>：检索现有词条，判断本次操作类型：<ul>
+<li><strong>新建</strong>：内容是全新主题 → 创建新词条</li>
+<li><strong>合并</strong>：与已有词条高度重合 → 并入该词条，补充出处</li>
+<li><strong>更新</strong>：已有词条存在但信息过时&#x2F;不完整 → 修订该词条，保留修订痕迹</li>
+</ul>
+</li>
+<li>写入&#x2F;更新词条，维护”关联词条”双向关系（A 链 B 时检查 B 是否应回链 A）</li>
+<li>更新索引（分类&#x2F;标签），保证网站导航同步</li>
+<li>输出本次操作摘要：新建了哪些、合并了哪些、更新了哪些</li>
+</ol>
+<h3 id="4-3-两种入库触发方式"><a href="#4-3-两种入库触发方式" class="headerlink" title="4.3 两种入库触发方式"></a>4.3 两种入库触发方式</h3><p>知识库支持”资料驱动”和”问题驱动”两种入口，最终都汇入同一条标准入库流程（4.2），<strong>词条必须建立在 sources&#x2F; 层的真实存档上，不允许 AI 凭空生成词条</strong>。</p>
+<p><strong>方式一 · 资料驱动（用户喂资料）</strong>：即 4.2 的标准流程，资料来自用户提供的链接&#x2F;文字&#x2F;文件。</p>
+<p><strong>方式二 · 问题驱动（研究入库）</strong>：用户只有一个想了解的概念或问题，没有现成资料：</p>
+<ol>
+<li><strong>先答</strong>：AI 直接回答问题，按务实派规矩标注”⚠️ 此条来自库外，未入库”</li>
+<li><strong>再问</strong>：回答末尾询问”要不要入库？”</li>
+<li><strong>再存</strong>：用户确认后，AI 主动检索收集 2~5 篇真实资料，按 3.2 节建立<strong>摘录卡</strong>（不存全文），再走 4.2 标准流程生成词条、出处指向摘录卡</li>
+<li>词条内容<strong>以收集到的真实资料为准</strong>，不直接采用第 1 步的回答文本——避免模型记忆&#x2F;幻觉直接进入知识库</li>
+</ol>
+<h3 id="4-4-防膨胀与防重复机制"><a href="#4-4-防膨胀与防重复机制" class="headerlink" title="4.4 防膨胀与防重复机制"></a>4.4 防膨胀与防重复机制</h3><ul>
+<li>查重是强制前置步骤，不是可选项</li>
+<li>“合并&#x2F;更新”优先于”新建”：规则文件明确规定——<em>能用已有词条承载的内容，不允许新建词条</em></li>
+<li>体检中的”近义词条”检查作为兜底，定期发现漏网的重复</li>
+</ul>
+<h3 id="4-5-回答问题的规矩（务实派）"><a href="#4-5-回答问题的规矩（务实派）" class="headerlink" title="4.5 回答问题的规矩（务实派）"></a>4.5 回答问题的规矩（务实派）</h3><ul>
+<li>优先引用库内词条和原始资料，引用处标注来源</li>
+<li>库内没有覆盖的问题，明确说”库里没有相关内容”</li>
+<li>使用库外知识时，标注”⚠️ 此条来自库外，未入库”</li>
+</ul>
+<h3 id="4-6-存量旧文处理原则"><a href="#4-6-存量旧文处理原则" class="headerlink" title="4.6 存量旧文处理原则"></a>4.6 存量旧文处理原则</h3><p>现有 Hexo 仓库中复用的是”壳”（框架、主题、部署链路），<strong>不是旧内容</strong>。旧博客文章不自动纳入词条体系、不强制套用词条模板：</p>
+<ul>
+<li><strong>保持原样</strong>：旧文继续留在 <code>source/_posts/</code> 正常显示，它们不是”词条”，只是博客旧文</li>
+<li><strong>想翻新的</strong>：由用户挑选，旧文作为”原始资料”重新走 <code>ingest</code> 流程，按新模板与风格档案生成规范词条，旧文随后删除或移出；这批翻新同时作为风格学习循环的第一批练习素材</li>
+<li><strong>看不上眼的</strong>：直接删除</li>
+<li>过渡期内新体系词条与旧博客文并存，随翻新进度此消彼长</li>
+</ul>
+<h2 id="5-第-3-层：规则文件-Skill-封装"><a href="#5-第-3-层：规则文件-Skill-封装" class="headerlink" title="5. 第 3 层：规则文件 + Skill 封装"></a>5. 第 3 层：规则文件 + Skill 封装</h2><p>第 3 层不是两份”散养”的文档，而是封装成一个<strong>标准 skill 包</strong>（遵循 SKILL.md 规范）。这样规则、风格、操作流程不依赖任何特定 AI 应用的注入逻辑——任何支持 skill 的 agent 平台（Kimi、Claude Code、Codex 等）加载它就知道如何维护这个知识库。</p>
+<h3 id="5-1-skill-包结构"><a href="#5-1-skill-包结构" class="headerlink" title="5.1 skill 包结构"></a>5.1 skill 包结构</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">skill/</span><br><span class="line">├── SKILL.md            # 入口：知识库是什么、核心工作流（入库/研究学习/问答/体检）怎么执行</span><br><span class="line">├── rules/</span><br><span class="line">│   ├── constitution.md   # 组织宪法（见 5.2）</span><br><span class="line">│   └── style-profile.md  # 风格档案（见 5.3）</span><br><span class="line">└── scripts/              # 机械操作的辅助脚本</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>SKILL.md</strong>：面向 AI 的操作手册。说明三层架构，定义入库（查重→新建&#x2F;合并&#x2F;更新）、研究学习（先答→再问→检索收集→入库）、带规矩问答、体检四个工作流的执行步骤，并指引 AI 在生成内容前必读 <code>style-profile.md</code></li>
+<li><strong>可移植性</strong>：换平台、换模型时，只要把这个 skill 目录加载进去，知识库的”玩法”原样生效；模型本身只需是 OpenAI 兼容接口</li>
+<li><strong>兜底</strong>：对于不支持 skill 的纯 API 调用场景，CLI 工具会把 <code>SKILL.md + constitution.md + style-profile.md</code> 拼接注入 system prompt，两种路径读的是同一套规则，不存在两套规矩漂移的问题</li>
+</ul>
+<h3 id="5-2-constitution-md（组织宪法，相对稳定）"><a href="#5-2-constitution-md（组织宪法，相对稳定）" class="headerlink" title="5.2 constitution.md（组织宪法，相对稳定）"></a>5.2 constitution.md（组织宪法，相对稳定）</h3><ul>
+<li>三层架构及各层规矩（原始层只读、词条模板、出处格式）</li>
+<li>入库流程（查重 → 新建&#x2F;合并&#x2F;更新的判断标准）</li>
+<li>目录与命名规范</li>
+<li>回答问题的规矩（务实派条款）</li>
+<li>体检标准</li>
+</ul>
+<h3 id="5-3-style-profile-md（风格档案，持续演化）"><a href="#5-3-style-profile-md（风格档案，持续演化）" class="headerlink" title="5.3 style-profile.md（风格档案，持续演化）"></a>5.3 style-profile.md（风格档案，持续演化）</h3><p>记录用户的写作偏好，由”风格学习循环”维护：</p>
+<ol>
+<li>AI 生成词条 → 用户人工修改</li>
+<li>AI 对比”原版 vs 修改版”，归纳差异（如：偏好短句&#x2F;长句、要不要保留代码示例、摘要写法、详略程度）</li>
+<li>差异追加进 <code>style-profile.md</code>，附示例</li>
+<li>后续生成时先读风格档案，逐步逼近”一步到位”</li>
+</ol>
+<h2 id="6-工具链与使用入口"><a href="#6-工具链与使用入口" class="headerlink" title="6. 工具链与使用入口"></a>6. 工具链与使用入口</h2><p>本地 Python 工具，作为 skill 包内的 <code>scripts/</code> 交付，<strong>不绑定任何特定 AI 应用</strong>。</p>
+<h3 id="6-1-使用入口（日常接触面，按优先级）"><a href="#6-1-使用入口（日常接触面，按优先级）" class="headerlink" title="6.1 使用入口（日常接触面，按优先级）"></a>6.1 使用入口（日常接触面，按优先级）</h3><table>
+<thead>
+<tr>
+<th>入口</th>
+<th>形态</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>① agent 平台（如 Kimi Work）</td>
+<td>对话式，加载 skill 包后直接聊天操作本地仓库</td>
+<td>电脑上，体验最好；收资料、学概念、问答、体检全支持</td>
+</tr>
+<tr>
+<td>② 本地网页对话（<code>kb web</code> 启动）</td>
+<td>浏览器打开聊天页面：左侧对话，右侧可预览知识库文件；粘贴链接、提问、确认入库全在页面里完成</td>
+<td>不想打开 AI 应用时使用；功能与入口①等价</td>
+</tr>
+<tr>
+<td>③ GitHub Issue 触发</td>
+<td>手机&#x2F;任意设备打开仓库网页，新建 Issue 粘贴链接；Actions 后台入库并在 Issue 下回复结果</td>
+<td>手机端随手收资料（异步，几分钟完成；不支持来回追问的”学概念”流程）</td>
+</tr>
+<tr>
+<td>兜底 · 命令行</td>
+<td><code>kb</code> 命令直接调模型 API</td>
+<td>脚本自动化；也是入口②③的内部实现管道，日常无需直接使用</td>
+</tr>
+</tbody></table>
+<p>阅读入口不分场景：任何时候打开 GitHub Pages 网站即可。</p>
+<p><strong>输入网页与查看网页是两个不同的网站</strong>（读写分离的直接体现）：</p>
+<ul>
+<li>查看网页 &#x3D; GitHub Pages 静态站：只读、全天候、任何设备可看</li>
+<li>输入网页 &#x3D; 本地 <code>localhost</code> 页面：仅在电脑上启动时存在；必须本地运行的两个原因——要写文件&#x2F;提交 git、API key 不能暴露在任何托管网页中</li>
+<li>衔接：输入网页右侧自带知识库浏览栏，”边聊边看”单页闭环；顶部放”查看已发布网站”跳转链接</li>
+<li>远期可选项：整套系统部署到自有服务器后，查看与对话可合并为同一站点，属后期升级项</li>
+</ul>
+<h3 id="6-2-配置（config-yaml）"><a href="#6-2-配置（config-yaml）" class="headerlink" title="6.2 配置（config.yaml）"></a>6.2 配置（config.yaml）</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">llm:</span></span><br><span class="line">  <span class="attr">base_url:</span> <span class="string">&quot;https://api.moonshot.cn/v1&quot;</span>    <span class="comment"># 任意 OpenAI 兼容接口，首个接入 Kimi</span></span><br><span class="line">  <span class="attr">api_key:</span> <span class="string">&quot;sk-...&quot;</span></span><br><span class="line">  <span class="attr">model:</span> <span class="string">&quot;model-name&quot;</span>                        <span class="comment"># 换模型只改这一行</span></span><br><span class="line"><span class="attr">ingest:</span></span><br><span class="line">  <span class="attr">research_keep_fulltext:</span> <span class="literal">false</span>              <span class="comment"># 研究入库是否保留全文（默认仅建摘录卡）</span></span><br><span class="line">  <span class="attr">research_max_sources:</span> <span class="number">5</span>                    <span class="comment"># 研究入库单次最多收集几篇资料</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-功能命令（底层管道）"><a href="#6-3-功能命令（底层管道）" class="headerlink" title="6.3 功能命令（底层管道）"></a>6.3 功能命令（底层管道）</h3><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>web</code></td>
+<td>启动本地网页对话界面（入口②），浏览器自动打开聊天页</td>
+</tr>
+<tr>
+<td><code>ingest &lt;链接/文件/文本&gt;</code></td>
+<td>入库：存档原始资料 → 查重 → 生成&#x2F;合并&#x2F;更新词条</td>
+</tr>
+<tr>
+<td><code>learn &lt;主题/问题&gt;</code></td>
+<td>研究入库：先回答 → 确认后检索收集真实资料 → 走标准入库流程</td>
+</tr>
+<tr>
+<td><code>check</code></td>
+<td>体检（本地版）：机械检查 + 可选语义检查</td>
+</tr>
+<tr>
+<td><code>ask &quot;&lt;问题&gt;&quot;</code></td>
+<td>带规矩检索库内内容并回答</td>
+</tr>
+</tbody></table>
+<p>网页对话界面要求：</p>
+<ul>
+<li>聊天式交互，支持”先答→再问→确认入库”的多轮流程</li>
+<li>对话中可直接粘贴链接&#x2F;文字&#x2F;上传文件，等价于触发 ingest</li>
+<li>侧边栏可浏览知识库目录与词条内容，入库结果即时可见</li>
+<li>纯本地运行（localhost），不经过第三方服务器</li>
+</ul>
+<h3 id="6-4-体检的两个阶段"><a href="#6-4-体检的两个阶段" class="headerlink" title="6.4 体检的两个阶段"></a>6.4 体检的两个阶段</h3><ul>
+<li><strong>阶段一 · 机械检查</strong>（纯脚本，不耗 API）：死链、孤儿词条、无出处内容、过期内容</li>
+<li><strong>阶段二 · 语义检查</strong>（调用模型 API，有费用；<strong>默认关闭</strong>，<code>check --deep</code> 手动开启）：近义词条识别与合并建议、风格一致性抽查</li>
+</ul>
+<h3 id="6-5-网页体检按钮"><a href="#6-5-网页体检按钮" class="headerlink" title="6.5 网页体检按钮"></a>6.5 网页体检按钮</h3><ul>
+<li>网站页面上放置”运行体检”按钮 → 实际触发 GitHub Actions（workflow_dispatch）</li>
+<li>后台跑 <code>check</code>，结果生成为”体检报告”页面发布到网站</li>
+<li>报告含：问题清单、位置、建议操作；语义类建议（合并词条）只给建议不自动执行，由用户确认</li>
+</ul>
+<h2 id="7-技术选型"><a href="#7-技术选型" class="headerlink" title="7. 技术选型"></a>7. 技术选型</h2><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>选型</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>存储</td>
+<td>GitHub 公开仓库</td>
+<td>版本管理、随处可访问、免费</td>
+</tr>
+<tr>
+<td>静态站点</td>
+<td>Hexo 8 + NexT 主题（复用现有博客）</td>
+<td>已部署、使用者熟悉；分类&#x2F;归档&#x2F;本地搜索能力齐备</td>
+</tr>
+<tr>
+<td>链接转换</td>
+<td>Hexo 插件将词条内 <code>.md</code> 相对链接转为站点 URL</td>
+<td>保证词条互链在仓库和网站上双端可用</td>
+</tr>
+<tr>
+<td>自动发布</td>
+<td>GitHub Actions → GitHub Pages</td>
+<td>推内容即更新网站，零运维</td>
+</tr>
+<tr>
+<td>体检后端</td>
+<td>GitHub Actions + 模型 API（密钥存 Actions Secrets）</td>
+<td>静态站无法跑 AI，用 Actions 做后台执行</td>
+</tr>
+<tr>
+<td>生成工具</td>
+<td>Python（OpenAI 兼容 SDK）+ 本地网页对话界面</td>
+<td>模型可切换，不绑定特定 AI 应用；日常以网页对话为主，CLI 为底层管道</td>
+</tr>
+</tbody></table>
+<h2 id="8-非目标（本阶段不做）"><a href="#8-非目标（本阶段不做）" class="headerlink" title="8. 非目标（本阶段不做）"></a>8. 非目标（本阶段不做）</h2><ul>
+<li>不做 Obsidian 双链语法（用标准 Markdown 链接替代，反链靠体检统计）</li>
+<li>不做多人协作、权限管理</li>
+<li>不做移动端 App</li>
+<li>不做规模预设与容量规划（规模大了再演进目录结构）</li>
+<li>体检报告不自动执行合并等破坏性操作，仅提供建议</li>
+</ul>
+<h2 id="9-里程碑"><a href="#9-里程碑" class="headerlink" title="9. 里程碑"></a>9. 里程碑</h2><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>交付物</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M1 · 骨架</td>
+<td>在现有 Hexo 仓库上落地三层结构：sources&#x2F; + source&#x2F;_posts&#x2F;tech|insights + skill 包 + 链接转换插件 + GitHub Pages 自动构建跑通</td>
+</tr>
+<tr>
+<td>M2 · 入库闭环</td>
+<td>底层命令可用（ingest&#x2F;learn：链接&#x2F;文字&#x2F;PDF → 词条生成，含查重、出处）+ 本地网页对话界面上线</td>
+</tr>
+<tr>
+<td>M3 · 体检与手机入口</td>
+<td><code>check</code> 命令 + 网站体检按钮 + 报告页 + GitHub Issue 触发入库工作流</td>
+</tr>
+<tr>
+<td>M4 · 风格学习</td>
+<td>style-profile.md 机制跑通，完成前几轮”生成→修改→学习”迭代</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="下篇-·-底座搭建实操（Hexo-NexT-GitHub-Pages）"><a href="#下篇-·-底座搭建实操（Hexo-NexT-GitHub-Pages）" class="headerlink" title="下篇 · 底座搭建实操（Hexo + NexT + GitHub Pages）"></a>下篇 · 底座搭建实操（Hexo + NexT + GitHub Pages）</h1><p>读取侧底座使用 Hexo 将 Markdown 文件编译为静态网页，通过 GitHub Pages 托管，并借助 GitHub Actions 实现 push 自动部署。</p>
+<p>涉及的组件：</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Hexo</td>
+<td>基于 Node.js 的静态博客框架，负责将 Markdown 编译为静态站点</td>
+</tr>
+<tr>
+<td>NexT</td>
+<td>Hexo 生态中使用最广泛的社区主题，提供多种方案和丰富的可配置项</td>
+</tr>
+<tr>
+<td>GitHub Pages</td>
+<td>GitHub 提供的静态网站托管服务，无需自建服务器</td>
+</tr>
+<tr>
+<td>GitHub Actions</td>
+<td>CI&#x2F;CD 流水线，用于在代码推送到仓库后自动执行编译和部署</td>
+</tr>
+</tbody></table>
+<h2 id="10-环境准备"><a href="#10-环境准备" class="headerlink" title="10. 环境准备"></a>10. 环境准备</h2><h3 id="Node-js"><a href="#Node-js" class="headerlink" title="Node.js"></a>Node.js</h3><p>Hexo 基于 Node.js，要求版本不低于 v18。执行以下命令确认已安装：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node --version</span><br></pre></td></tr></table></figure>
+
+<p>未安装时前往 <a target="_blank" rel="noopener" href="https://nodejs.org/">Node.js 官网</a> 下载 LTS 版本。</p>
+<h3 id="Git"><a href="#Git" class="headerlink" title="Git"></a>Git</h3><p>用于版本控制和远程推送：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git --version</span><br></pre></td></tr></table></figure>
+
+<p>未安装时前往 <a target="_blank" rel="noopener" href="https://git-scm.com/">Git 官网</a> 下载。</p>
+<h3 id="GitHub-账号"><a href="#GitHub-账号" class="headerlink" title="GitHub 账号"></a>GitHub 账号</h3><p>用于代码托管和静态站点发布。如需在命令行中操作 GitHub，可安装 <a target="_blank" rel="noopener" href="https://cli.github.com/">GitHub CLI</a>（可选，不影响后续步骤）。</p>
+<h2 id="11-安装-Hexo"><a href="#11-安装-Hexo" class="headerlink" title="11. 安装 Hexo"></a>11. 安装 Hexo</h2><p>在终端（Windows 推荐 Git Bash 或 PowerShell）中执行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g hexo-cli</span><br></pre></td></tr></table></figure>
+
+<p>安装完成后验证：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo version</span><br></pre></td></tr></table></figure>
+
+<h2 id="12-初始化项目"><a href="#12-初始化项目" class="headerlink" title="12. 初始化项目"></a>12. 初始化项目</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> D:\wiki</span><br><span class="line"><span class="built_in">cd</span> D:\wiki</span><br><span class="line">hexo init .</span><br><span class="line">npm install</span><br></pre></td></tr></table></figure>
+
+<p><code>hexo init .</code> 会在当前目录生成项目结构：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">wiki/</span><br><span class="line">├── _config.yml          # 站点配置文件</span><br><span class="line">├── source/</span><br><span class="line">│   └── _posts/          # 文章目录</span><br><span class="line">├── themes/              # 主题目录</span><br><span class="line">├── scaffolds/           # 文章模板</span><br><span class="line">├── package.json         # Node.js 依赖声明</span><br><span class="line">└── node_modules/        # 已安装的依赖</span><br></pre></td></tr></table></figure>
+
+<h2 id="13-安装-NexT-主题"><a href="#13-安装-NexT-主题" class="headerlink" title="13. 安装 NexT 主题"></a>13. 安装 NexT 主题</h2><p>NexT 是 Hexo 社区中安装量最高的主题，特点为功能完善、文档齐全、可配置程度高。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-theme-next</span><br></pre></td></tr></table></figure>
+
+<p>安装后修改 <code>_config.yml</code> 中的 <code>theme</code> 字段，将默认值 <code>landscape</code> 替换为 <code>next</code>：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">theme:</span> <span class="string">next</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="14-配置站点信息"><a href="#14-配置站点信息" class="headerlink" title="14. 配置站点信息"></a>14. 配置站点信息</h2><p>编辑项目根目录下的 <code>_config.yml</code>，重点修改以下字段：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">title:</span> <span class="string">个人学习</span> <span class="string">Wiki</span></span><br><span class="line"><span class="attr">subtitle:</span> <span class="string">日拱一卒，功不唐捐</span></span><br><span class="line"><span class="attr">description:</span> <span class="string">个人学习知识库</span></span><br><span class="line"><span class="attr">author:</span> <span class="string">你的名称</span></span><br><span class="line"><span class="attr">language:</span> <span class="string">zh-CN</span></span><br><span class="line"><span class="attr">timezone:</span> <span class="string">&#x27;Asia/Shanghai&#x27;</span></span><br><span class="line"><span class="attr">url:</span> <span class="string">https://你的用户名.github.io/wiki</span></span><br><span class="line"><span class="attr">theme:</span> <span class="string">next</span></span><br></pre></td></tr></table></figure>
+
+<p><code>url</code> 字段填写最终部署地址，GitHub 仓库创建后即可确定。</p>
+<h2 id="15-配置-NexT-主题"><a href="#15-配置-NexT-主题" class="headerlink" title="15. 配置 NexT 主题"></a>15. 配置 NexT 主题</h2><p>NexT 的主题配置位于项目根目录下的 <code>_config.next.yml</code>。若该文件不存在，手动新建。</p>
+<h3 id="Scheme-选择"><a href="#Scheme-选择" class="headerlink" title="Scheme 选择"></a>Scheme 选择</h3><p>NexT 提供四种方案，通过 <code>scheme</code> 字段切换：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Muse</td>
+<td>无侧边栏，全宽布局</td>
+</tr>
+<tr>
+<td>Mist</td>
+<td>紧凑型侧边栏</td>
+</tr>
+<tr>
+<td>Pisces</td>
+<td>常规侧边栏，适合知识库</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td>大尺寸侧边栏</td>
+</tr>
+</tbody></table>
+<p>推荐 Pisces。基础配置：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">scheme:</span> <span class="string">Pisces</span></span><br><span class="line"></span><br><span class="line"><span class="attr">darkmode:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="attr">menu:</span></span><br><span class="line">  <span class="attr">home:</span> <span class="string">/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-home</span></span><br><span class="line">  <span class="attr">categories:</span> <span class="string">/categories/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-th</span></span><br><span class="line">  <span class="attr">about:</span> <span class="string">/about/</span> <span class="string">||</span> <span class="string">fa</span> <span class="string">fa-user</span></span><br><span class="line"></span><br><span class="line"><span class="attr">sidebar:</span></span><br><span class="line">  <span class="attr">position:</span> <span class="string">left</span></span><br><span class="line">  <span class="attr">display:</span> <span class="string">post</span></span><br><span class="line"></span><br><span class="line"><span class="attr">back2top:</span></span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">sidebar:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">scrollpercent:</span> <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="attr">codeblock:</span></span><br><span class="line">  <span class="attr">copy_button:</span></span><br><span class="line">    <span class="attr">enable:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">show_result:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">style:</span> <span class="string">flat</span></span><br><span class="line"></span><br><span class="line"><span class="attr">excerpt_description:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>darkmode: true</code> — 启用暗黑模式切换</li>
+<li><code>excerpt_description: true</code> — 首页使用 <code>description</code> 字段作为摘要，而非截取正文</li>
+</ul>
+<h2 id="16-本地预览"><a href="#16-本地预览" class="headerlink" title="16. 本地预览"></a>16. 本地预览</h2><p>推送至远程仓库之前，先在本地启动服务验证效果：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo server</span><br></pre></td></tr></table></figure>
+
+<p>或简写为 <code>hexo s</code>。默认访问地址为 <code>http://localhost:4000</code>。若端口被占用，Hexo 会自动切换到下一个可用端口，注意观察终端输出的实际地址。</p>
+<p><code>hexo server</code> 会持续监听文件变更，修改文章或配置后刷新浏览器即可查看更新，无需手动重启。按 <code>Ctrl + C</code> 停止服务。</p>
+<h2 id="17-创建-GitHub-仓库"><a href="#17-创建-GitHub-仓库" class="headerlink" title="17. 创建 GitHub 仓库"></a>17. 创建 GitHub 仓库</h2><p>在 GitHub 上新建仓库，名称建议为 <code>wiki</code>（该名称将作为 URL 路径的一部分，如 <code>用户名.github.io/wiki</code>）。</p>
+<p>仓库可见性需设为 <strong>Public</strong>，这是使用免费 GitHub Pages 的前提。</p>
+<p>若已安装 GitHub CLI：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gh repo create 你的用户名/wiki --public --description <span class="string">&quot;个人学习 wiki 知识库&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="18-配置自动部署"><a href="#18-配置自动部署" class="headerlink" title="18. 配置自动部署"></a>18. 配置自动部署</h2><p>GitHub Actions 可以将编译部署自动化：向 <code>main</code> 分支推送代码后，自动触发编译并部署至 <code>gh-pages</code> 分支。</p>
+<p>在项目目录下创建 <code>.github/workflows/deploy.yml</code>：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">name:</span> <span class="string">Deploy</span></span><br><span class="line"><span class="attr">on:</span></span><br><span class="line">  <span class="attr">push:</span></span><br><span class="line">    <span class="attr">branches:</span> [<span class="string">main</span>]</span><br><span class="line"></span><br><span class="line"><span class="attr">permissions:</span></span><br><span class="line">  <span class="attr">contents:</span> <span class="string">write</span></span><br><span class="line"></span><br><span class="line"><span class="attr">jobs:</span></span><br><span class="line">  <span class="attr">deploy:</span></span><br><span class="line">    <span class="attr">runs-on:</span> <span class="string">ubuntu-latest</span></span><br><span class="line">    <span class="attr">steps:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">uses:</span> <span class="string">actions/checkout@v4</span></span><br><span class="line"></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">uses:</span> <span class="string">actions/setup-node@v4</span></span><br><span class="line">        <span class="attr">with:</span></span><br><span class="line">          <span class="attr">node-version:</span> <span class="string">&#x27;20&#x27;</span></span><br><span class="line"></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">run:</span> <span class="string">npm</span> <span class="string">ci</span></span><br><span class="line"></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">run:</span> <span class="string">npx</span> <span class="string">hexo</span> <span class="string">generate</span></span><br><span class="line"></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">uses:</span> <span class="string">peaceiris/actions-gh-pages@v4</span></span><br><span class="line">        <span class="attr">with:</span></span><br><span class="line">          <span class="attr">github_token:</span> <span class="string">$&#123;&#123;</span> <span class="string">secrets.GITHUB_TOKEN</span> <span class="string">&#125;&#125;</span></span><br><span class="line">          <span class="attr">publish_dir:</span> <span class="string">./public</span></span><br><span class="line">          <span class="attr">publish_branch:</span> <span class="string">gh-pages</span></span><br><span class="line">          <span class="attr">force_orphan:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>工作流说明：</p>
+<ol>
+<li><code>actions/checkout@v4</code> — 检出仓库代码</li>
+<li><code>actions/setup-node@v4</code> — 配置 Node.js 环境</li>
+<li><code>npm ci</code> — 安装依赖</li>
+<li><code>npx hexo generate</code> — 编译生成静态文件至 <code>public/</code> 目录</li>
+<li><code>peaceiris/actions-gh-pages@v4</code> — 将 <code>public/</code> 目录推送至 <code>gh-pages</code> 分支</li>
+</ol>
+<h2 id="19-推送并启用-Pages"><a href="#19-推送并启用-Pages" class="headerlink" title="19. 推送并启用 Pages"></a>19. 推送并启用 Pages</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> D:\wiki</span><br><span class="line">git init</span><br><span class="line">git checkout -b main</span><br><span class="line">git add -A</span><br><span class="line">git commit -m <span class="string">&quot;初始化 wiki&quot;</span></span><br><span class="line">git remote add origin git@github.com:你的用户名/wiki.git</span><br><span class="line">git push -u origin main</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>使用 <code>git@github.com:...</code> 格式的 SSH 地址需要先在 GitHub 中配置 SSH 公钥。也可使用 HTTPS 地址 <code>https://github.com/你的用户名/wiki.git</code>，首次推送时会提示登录。</p>
+</blockquote>
+<p>推送完成后，进入 GitHub 仓库页面 → Settings → Pages，将 Source 设置为 <code>gh-pages</code> 分支。GitHub 将在数分钟内完成首次部署。</p>
+<p>最终访问地址：<code>https://你的用户名.github.io/wiki</code></p>
+<p>此后每次向 <code>main</code> 分支推送代码，GitHub Actions 均会自动重新部署。</p>
+<h2 id="20-日常写作与维护"><a href="#20-日常写作与维护" class="headerlink" title="20. 日常写作与维护"></a>20. 日常写作与维护</h2><h3 id="日常写作流程"><a href="#日常写作流程" class="headerlink" title="日常写作流程"></a>日常写作流程</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> D:\wiki</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 创建新文章</span></span><br><span class="line">hexo new <span class="string">&quot;文章标题&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 文章生成于 source/_posts/ 目录，使用任意文本编辑器编辑</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 本地预览</span></span><br><span class="line">hexo server</span><br><span class="line"><span class="comment"># 浏览器访问 http://localhost:4000</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 推送</span></span><br><span class="line">git add -A</span><br><span class="line">git commit -m <span class="string">&quot;新增：文章标题&quot;</span></span><br><span class="line">git push</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>待 M2 入库闭环上线后，词条类内容由 <code>ingest</code>&#x2F;<code>learn</code> 流程自动生成，<code>hexo new</code> 仅用于非词条的传统博文。</p>
+</blockquote>
+<h3 id="手动编译"><a href="#手动编译" class="headerlink" title="手动编译"></a>手动编译</h3><p>若需查看编译产物或在离线状态下调试：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo clean       <span class="comment"># 清除缓存与编译输出</span></span><br><span class="line">hexo generate    <span class="comment"># 重新编译至 public/ 目录</span></span><br></pre></td></tr></table></figure>
+
+<p><code>hexo clean</code> 仅在配置变更未生效或编译异常时使用。日常预览使用 <code>hexo server</code> 即可，该命令已内置编译步骤。</p>
+<h2 id="21-文章编写规范"><a href="#21-文章编写规范" class="headerlink" title="21. 文章编写规范"></a>21. 文章编写规范</h2><h3 id="文件格式"><a href="#文件格式" class="headerlink" title="文件格式"></a>文件格式</h3><p>所有文章置于 <code>source/_posts/</code> 目录，文件格式为 Markdown（<code>.md</code>）。词条按分区置于 <code>source/_posts/tech/</code> 与 <code>source/_posts/insights/</code> 子目录，Hexo 按子目录自动归类。</p>
+<h3 id="Frontmatter"><a href="#Frontmatter" class="headerlink" title="Frontmatter"></a>Frontmatter</h3><p>每篇文章以 YAML 格式的 Frontmatter 开头，定义元信息：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">title:</span> <span class="string">文章标题</span></span><br><span class="line"><span class="attr">date:</span> <span class="number">2026-06-08 12:00:00</span></span><br><span class="line"><span class="attr">categories:</span> [<span class="string">一级分类</span>, <span class="string">子分类</span>]</span><br><span class="line"><span class="attr">description:</span> <span class="string">文章概述，显示于首页标题下方，建议控制在两句话以内。</span></span><br><span class="line"><span class="meta">---</span></span><br></pre></td></tr></table></figure>
+
+<p><code>description</code> 决定了首页文章卡片的概述文字。若省略此字段，Hexo 将自动截取正文头部内容作为摘要（通常效果不佳），因此建议每篇文章自行填写。</p>
+<h3 id="文章模板"><a href="#文章模板" class="headerlink" title="文章模板"></a>文章模板</h3><p><code>hexo new</code> 命令使用 <code>scaffolds/post.md</code> 作为模板生成文件。可编辑该模板，预设常用的 categories，减少重复填写。</p>
+<h2 id="22-Windows-环境注意事项"><a href="#22-Windows-环境注意事项" class="headerlink" title="22. Windows 环境注意事项"></a>22. Windows 环境注意事项</h2><ul>
+<li>终端推荐使用 <strong>Git Bash</strong> 或 <strong>PowerShell</strong></li>
+<li>文件路径中的正斜杠 <code>/</code> 和反斜杠 <code>\</code> 均可使用，Hexo 内部统一处理</li>
+<li><code>node_modules/</code> 由 <code>.gitignore</code> 排除，不会被提交至仓库</li>
+<li>如 <code>hexo server</code> 启动异常，先执行 <code>hexo clean</code> 清空缓存后重试</li>
+</ul>
+<hr>
+<h2 id="附录：使用-AI-重建底座"><a href="#附录：使用-AI-重建底座" class="headerlink" title="附录：使用 AI 重建底座"></a>附录：使用 AI 重建底座</h2><p>以下提示语可供 AI 助手直接执行，用于重建或迁移底座方案。</p>
+<h3 id="完整提示语"><a href="#完整提示语" class="headerlink" title="完整提示语"></a>完整提示语</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">使用 Hexo + NexT 主题 + GitHub Pages 搭建个人 Wiki 知识库。</span><br><span class="line"></span><br><span class="line">要求：</span><br><span class="line">1. 本地目录 D:\wiki</span><br><span class="line">2. GitHub 仓库：当前用户名/wiki</span><br><span class="line">3. 主题方案：NexT Pisces</span><br><span class="line">4. 启用暗黑模式、代码复制按钮、回到顶部按钮</span><br><span class="line">5. 首页使用 description 字段显示文章摘要（关闭正文截取）</span><br><span class="line">6. 导航栏仅保留首页、分类、关于</span><br><span class="line">7. 配置 GitHub Actions：向 main 分支推送后自动编译并部署至 gh-pages</span><br><span class="line">8. 生成分类页与关于页</span><br><span class="line"></span><br><span class="line">执行步骤：</span><br><span class="line">- 验证 Node.js 与 Git 环境</span><br><span class="line">- npm install -g hexo-cli</span><br><span class="line">- hexo init D:\wiki &amp;&amp; npm install</span><br><span class="line">- npm install hexo-theme-next</span><br><span class="line">- 创建 _config.next.yml 并配置 Pisces 方案</span><br><span class="line">- 修改 _config.yml 中的站点信息与 url</span><br><span class="line">- gh repo create 创建仓库</span><br><span class="line">- 配置 .github/workflows/deploy.yml</span><br><span class="line">- git push 并确认线上访问正常</span><br></pre></td></tr></table></figure>
+
+<h3 id="简化提示语"><a href="#简化提示语" class="headerlink" title="简化提示语"></a>简化提示语</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">使用 Hexo + NexT + GitHub Pages 搭建 Wiki，本地目录 D:\wiki，仓库名称 wiki，启用暗黑模式。</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://hexo.io/docs/">Hexo 官方文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://theme-next.js.org/">NexT 主题文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.github.com/en/pages">GitHub Pages 文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.github.com/en/actions">GitHub Actions 文档</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>DualPhaseDev
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://dualphasedev.github.io/wiki/2026/10/09/%E9%83%A8%E7%BD%B2/%E4%B8%AA%E4%BA%BA%E7%9F%A5%E8%AF%86%E5%BA%93-%E9%9C%80%E6%B1%82%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%90%AD%E5%BB%BA%E5%AE%9E%E5%BD%95/" title="个人知识库：需求设计与搭建实录">https://dualphasedev.github.io/wiki/2026/10/09/部署/个人知识库-需求设计与搭建实录/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/wiki/2026/06/09/Agent%E5%B7%A5%E5%85%B7/ClaudeCode/ClaudeCode%E4%BB%8B%E7%BB%8D/" rel="prev" title="Claude Code 介绍">
+                  <i class="fa fa-angle-left"></i> Claude Code 介绍
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/wiki/2026/10/09/AI%E7%BD%91%E7%AB%99%E8%AE%B0%E5%BD%95/" rel="next" title="">
+                   <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">true</span>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

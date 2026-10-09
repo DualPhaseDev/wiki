@@ -1,0 +1,833 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>个人知识库：需求设计与搭建实录</title>
+    <url>/wiki/2026/10/09/%E9%83%A8%E7%BD%B2/%E4%B8%AA%E4%BA%BA%E7%9F%A5%E8%AF%86%E5%BA%93-%E9%9C%80%E6%B1%82%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%90%AD%E5%BB%BA%E5%AE%9E%E5%BD%95/</url>
+    <content><![CDATA[
+本文由两部分合并而成：上半部分是知识库的需求设计（已定稿 v1.0），下半部分是博客底座的搭建实操（Hexo + NexT + GitHub Pages）。
+
+
+上篇 · 需求设计1. 背景与目标搭建一个个人知识库，承载两类内容：技术学习笔记与业界内容洞察。
+核心诉求（按优先级）：
+
+快速：丢链接 &#x2F; 粘文字 &#x2F; 扔 PDF，都能快速变成合格的知识库文档
+高质量：内容准确、有出处、结构统一
+合心意：通过”风格学习循环”让 AI 逐步学会使用者的偏好，后期一步到位
+不绑死：不依赖特定 AI 应用，通过可配置的 API 调用，模型可自由切换
+
+2. 总体架构        写入侧（生产线）                    读取侧（消费线）┌───────────────────────────┐      ┌───────────────────────────┐│ kb ingest / learn / check │      │  Hexo + NexT 静态博客      ││ skill 包（SKILL.md+规则）   │      │  分类/归档+本地搜索+词条跳转││ 模型 API（OpenAI 兼容）    │      │  体检按钮 / 报告页          │└─────────────┬─────────────┘      └─────────────▲─────────────┘              │ 读写                              │ 只读              ▼                                   │┌─────────────────────────────────────────────────────┐│  GitHub 仓库 · 内容层（唯一事实来源，纯 Markdown）      ││  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ││  │ 第1层        │  │ 第2层        │  │ 第3层        │  ││  │ 原始资料     │  │ 词条库       │  │ 规则文件     │  ││  │ sources/    │  │ source/     │  │ skill/rules/│  ││  │ （只读）     │  │ _posts/tech │  │ （宪法+风格） │  ││  │             │  │ _posts/ins… │  │             │  ││  └─────────────┘  └─────────────┘  └─────────────┘  │└─────────────────────────────────────────────────────┘         │  推代码触发 GitHub Actions 自动构建         ▼  GitHub Pages 发布
+
+架构原则：读写分离。 写入侧（skill + 脚本 + 模型 API）与读取侧（Hexo 网站）互不依赖，两侧都只依赖内容文件和规则文件：
+
+网站构建只读 source/ 内容目录，不感知 AI、API、脚本的存在——删掉整个写入侧，网站照常构建
+写入侧不感知网站的存在——按规则文件操作 Markdown，写完推代码即自动触发构建
+由此获得双侧可替换性：展示方案（Hexo&#x2F;MkDocs&#x2F;Obsidian&#x2F;其他）和生产线（模型&#x2F;skill 平台）各自独立演进
+仓库策略：初期单仓库 + 目录级隔离；日后可平滑拆分为内容仓库 + 工具仓库，届时内容层无需任何改动
+
+关键决策
+
+
+决策点
+结论
+
+
+
+载体
+复用现有 Hexo 博客仓库（本地 D:\wiki，Hexo 8 + NexT 主题），发布到 GitHub Pages
+
+
+词条链接
+标准 Markdown 链接（仓库内直接可用；网站上经链接转换插件生效）
+
+
+词条写入
+AI 直接写入，含自动合并&#x2F;更新已有词条的权限
+
+
+回答规矩
+务实派：优先库内资料；库外知识可用，但必须标注”来自库外”
+
+
+内容分区
+source/_posts/tech/（技术笔记）与 source/_posts/insights/（业界洞察），Hexo 按子目录自动归类，允许跨区互链
+
+
+体检方式
+网站上放”体检”按钮，触发 GitHub Actions 后台执行；语义检查默认关闭，手动开启
+
+
+生成方式
+模型 API（OpenAI 兼容接口）可配置切换，首个接入 Kimi；使用入口为 agent 对话 &#x2F; 本地网页对话 &#x2F; GitHub Issue，CLI 仅作底层管道
+
+
+仓库可见性
+公开（顺带获得免费 GitHub Pages 发布）
+
+
+单仓库目录结构仓库根/（D:\wiki）├── sources/            # 第1层：原始资料（全文存档 + 摘录卡）——Hexo 不渲染此目录├── source/│   └── _posts/│       ├── tech/       # 第2层：技术笔记词条（Hexo 自动归类为 tech）│       └── insights/   # 第2层：业界洞察词条（Hexo 自动归类为 insights）├── skill/              # 第3层 + 生产线——Hexo 不渲染此目录│   ├── SKILL.md│   ├── rules/          # constitution.md + style-profile.md│   └── scripts/        # 工具源码：CLI + 网页对话界面 + 体检├── _config.yml         # Hexo 站点配置├── _config.next.yml    # NexT 主题配置├── package.json        # Hexo 依赖└── .github/workflows/  # 自动构建发布 + 体检按钮 + Issue 触发入库
+
+不进仓库的三样东西：
+
+API key：本地 config.yaml 被 git 忽略；Actions 用的那份存仓库 Secrets，永不入代码
+网站成品：Pages 发布的是构建产物（HTML），由 Actions 生成，主分支只有 Markdown 源码
+第三方依赖：构建时按依赖清单自动安装，不进仓库
+
+3. 第 1 层：原始资料层（sources&#x2F;）规矩：只读，一个字不改。本层的目的是”可溯源”，不是”全文收藏”——引用的内容能逐字对应到不可篡改的存档、能找回原始出处即可。
+只读层分两种存档形态，按入库入口区分。
+3.1 全文存档（资料驱动入口专用）用户主动投喂的资料（链接&#x2F;文字&#x2F;PDF），原样全文保存：
+
+每份资料在文件头部记录元数据：标题、来源链接（如有）、收录日期、资料类型（链接&#x2F;文字&#x2F;文件）、用户备注（可选）
+网页类资料保存正文全文（不依赖原链接存活，防止日后失效）
+PDF 等二进制文件原样存放，另存一份提取出的纯文本供 AI 读取
+命名规范：YYYY-MM-DD-资料标题.md，禁止覆盖已有文件；同名冲突时追加序号
+
+3.2 摘录卡（研究入库入口专用）AI 检索收集的资料不存全文，只为词条实际引用的内容建立”摘录卡”：
+
+摘录卡内容：被引用的原文片段逐字摘录（一个字不改）+ 元数据（来源标题、原链接、收录日期、片段在原文中的位置&#x2F;上下文、资料类型标注”AI 检索收集”）
+命名规范：YYYY-MM-DD-主题-序号.md
+去重：同一来源已被收录过时，复用已有卡片，只追加新摘录，不重复存档
+原链接失效不影响库内可用性——引用文字已在卡内
+配置开关：研究模式是否保留全文，默认关闭
+
+4. 第 2 层：词条层4.1 词条模板（固定结构，供 AI 和脚本解析）# 词条名&gt; 一句话摘要（这个词条讲什么）## 核心内容（正文，可含小节、代码块、表格；直接引用原文的句子句尾标来源编号 [1]）## 关联词条- [相关词条A](../路径/a.md) — 关联原因一句话（允许为空，但区块标题必须保留）## 出处- [1] 原始资料标题，`sources/2026-xx-xx-xxx.md`，收录日期，原链接
+
+4.2 入库流程（新资料进来时 AI 的处理顺序）
+读取第 3 层规则文件和风格档案
+将原始资料存入 sources/（只读层；资料驱动入口存全文，研究入库入口建摘录卡）
+先查重：检索现有词条，判断本次操作类型：
+新建：内容是全新主题 → 创建新词条
+合并：与已有词条高度重合 → 并入该词条，补充出处
+更新：已有词条存在但信息过时&#x2F;不完整 → 修订该词条，保留修订痕迹
+
+
+写入&#x2F;更新词条，维护”关联词条”双向关系（A 链 B 时检查 B 是否应回链 A）
+更新索引（分类&#x2F;标签），保证网站导航同步
+输出本次操作摘要：新建了哪些、合并了哪些、更新了哪些
+
+4.3 两种入库触发方式知识库支持”资料驱动”和”问题驱动”两种入口，最终都汇入同一条标准入库流程（4.2），词条必须建立在 sources&#x2F; 层的真实存档上，不允许 AI 凭空生成词条。
+方式一 · 资料驱动（用户喂资料）：即 4.2 的标准流程，资料来自用户提供的链接&#x2F;文字&#x2F;文件。
+方式二 · 问题驱动（研究入库）：用户只有一个想了解的概念或问题，没有现成资料：
+
+先答：AI 直接回答问题，按务实派规矩标注”⚠️ 此条来自库外，未入库”
+再问：回答末尾询问”要不要入库？”
+再存：用户确认后，AI 主动检索收集 2~5 篇真实资料，按 3.2 节建立摘录卡（不存全文），再走 4.2 标准流程生成词条、出处指向摘录卡
+词条内容以收集到的真实资料为准，不直接采用第 1 步的回答文本——避免模型记忆&#x2F;幻觉直接进入知识库
+
+4.4 防膨胀与防重复机制
+查重是强制前置步骤，不是可选项
+“合并&#x2F;更新”优先于”新建”：规则文件明确规定——能用已有词条承载的内容，不允许新建词条
+体检中的”近义词条”检查作为兜底，定期发现漏网的重复
+
+4.5 回答问题的规矩（务实派）
+优先引用库内词条和原始资料，引用处标注来源
+库内没有覆盖的问题，明确说”库里没有相关内容”
+使用库外知识时，标注”⚠️ 此条来自库外，未入库”
+
+4.6 存量旧文处理原则现有 Hexo 仓库中复用的是”壳”（框架、主题、部署链路），不是旧内容。旧博客文章不自动纳入词条体系、不强制套用词条模板：
+
+保持原样：旧文继续留在 source/_posts/ 正常显示，它们不是”词条”，只是博客旧文
+想翻新的：由用户挑选，旧文作为”原始资料”重新走 ingest 流程，按新模板与风格档案生成规范词条，旧文随后删除或移出；这批翻新同时作为风格学习循环的第一批练习素材
+看不上眼的：直接删除
+过渡期内新体系词条与旧博客文并存，随翻新进度此消彼长
+
+5. 第 3 层：规则文件 + Skill 封装第 3 层不是两份”散养”的文档，而是封装成一个标准 skill 包（遵循 SKILL.md 规范）。这样规则、风格、操作流程不依赖任何特定 AI 应用的注入逻辑——任何支持 skill 的 agent 平台（Kimi、Claude Code、Codex 等）加载它就知道如何维护这个知识库。
+5.1 skill 包结构skill/├── SKILL.md            # 入口：知识库是什么、核心工作流（入库/研究学习/问答/体检）怎么执行├── rules/│   ├── constitution.md   # 组织宪法（见 5.2）│   └── style-profile.md  # 风格档案（见 5.3）└── scripts/              # 机械操作的辅助脚本
+
+
+SKILL.md：面向 AI 的操作手册。说明三层架构，定义入库（查重→新建&#x2F;合并&#x2F;更新）、研究学习（先答→再问→检索收集→入库）、带规矩问答、体检四个工作流的执行步骤，并指引 AI 在生成内容前必读 style-profile.md
+可移植性：换平台、换模型时，只要把这个 skill 目录加载进去，知识库的”玩法”原样生效；模型本身只需是 OpenAI 兼容接口
+兜底：对于不支持 skill 的纯 API 调用场景，CLI 工具会把 SKILL.md + constitution.md + style-profile.md 拼接注入 system prompt，两种路径读的是同一套规则，不存在两套规矩漂移的问题
+
+5.2 constitution.md（组织宪法，相对稳定）
+三层架构及各层规矩（原始层只读、词条模板、出处格式）
+入库流程（查重 → 新建&#x2F;合并&#x2F;更新的判断标准）
+目录与命名规范
+回答问题的规矩（务实派条款）
+体检标准
+
+5.3 style-profile.md（风格档案，持续演化）记录用户的写作偏好，由”风格学习循环”维护：
+
+AI 生成词条 → 用户人工修改
+AI 对比”原版 vs 修改版”，归纳差异（如：偏好短句&#x2F;长句、要不要保留代码示例、摘要写法、详略程度）
+差异追加进 style-profile.md，附示例
+后续生成时先读风格档案，逐步逼近”一步到位”
+
+6. 工具链与使用入口本地 Python 工具，作为 skill 包内的 scripts/ 交付，不绑定任何特定 AI 应用。
+6.1 使用入口（日常接触面，按优先级）
+
+
+入口
+形态
+适用场景
+
+
+
+① agent 平台（如 Kimi Work）
+对话式，加载 skill 包后直接聊天操作本地仓库
+电脑上，体验最好；收资料、学概念、问答、体检全支持
+
+
+② 本地网页对话（kb web 启动）
+浏览器打开聊天页面：左侧对话，右侧可预览知识库文件；粘贴链接、提问、确认入库全在页面里完成
+不想打开 AI 应用时使用；功能与入口①等价
+
+
+③ GitHub Issue 触发
+手机&#x2F;任意设备打开仓库网页，新建 Issue 粘贴链接；Actions 后台入库并在 Issue 下回复结果
+手机端随手收资料（异步，几分钟完成；不支持来回追问的”学概念”流程）
+
+
+兜底 · 命令行
+kb 命令直接调模型 API
+脚本自动化；也是入口②③的内部实现管道，日常无需直接使用
+
+
+阅读入口不分场景：任何时候打开 GitHub Pages 网站即可。
+输入网页与查看网页是两个不同的网站（读写分离的直接体现）：
+
+查看网页 &#x3D; GitHub Pages 静态站：只读、全天候、任何设备可看
+输入网页 &#x3D; 本地 localhost 页面：仅在电脑上启动时存在；必须本地运行的两个原因——要写文件&#x2F;提交 git、API key 不能暴露在任何托管网页中
+衔接：输入网页右侧自带知识库浏览栏，”边聊边看”单页闭环；顶部放”查看已发布网站”跳转链接
+远期可选项：整套系统部署到自有服务器后，查看与对话可合并为同一站点，属后期升级项
+
+6.2 配置（config.yaml）llm:  base_url: &quot;https://api.moonshot.cn/v1&quot;    # 任意 OpenAI 兼容接口，首个接入 Kimi  api_key: &quot;sk-...&quot;  model: &quot;model-name&quot;                        # 换模型只改这一行ingest:  research_keep_fulltext: false              # 研究入库是否保留全文（默认仅建摘录卡）  research_max_sources: 5                    # 研究入库单次最多收集几篇资料
+
+6.3 功能命令（底层管道）
+
+
+命令
+作用
+
+
+
+web
+启动本地网页对话界面（入口②），浏览器自动打开聊天页
+
+
+ingest &lt;链接/文件/文本&gt;
+入库：存档原始资料 → 查重 → 生成&#x2F;合并&#x2F;更新词条
+
+
+learn &lt;主题/问题&gt;
+研究入库：先回答 → 确认后检索收集真实资料 → 走标准入库流程
+
+
+check
+体检（本地版）：机械检查 + 可选语义检查
+
+
+ask &quot;&lt;问题&gt;&quot;
+带规矩检索库内内容并回答
+
+
+网页对话界面要求：
+
+聊天式交互，支持”先答→再问→确认入库”的多轮流程
+对话中可直接粘贴链接&#x2F;文字&#x2F;上传文件，等价于触发 ingest
+侧边栏可浏览知识库目录与词条内容，入库结果即时可见
+纯本地运行（localhost），不经过第三方服务器
+
+6.4 体检的两个阶段
+阶段一 · 机械检查（纯脚本，不耗 API）：死链、孤儿词条、无出处内容、过期内容
+阶段二 · 语义检查（调用模型 API，有费用；默认关闭，check --deep 手动开启）：近义词条识别与合并建议、风格一致性抽查
+
+6.5 网页体检按钮
+网站页面上放置”运行体检”按钮 → 实际触发 GitHub Actions（workflow_dispatch）
+后台跑 check，结果生成为”体检报告”页面发布到网站
+报告含：问题清单、位置、建议操作；语义类建议（合并词条）只给建议不自动执行，由用户确认
+
+7. 技术选型
+
+
+组件
+选型
+理由
+
+
+
+存储
+GitHub 公开仓库
+版本管理、随处可访问、免费
+
+
+静态站点
+Hexo 8 + NexT 主题（复用现有博客）
+已部署、使用者熟悉；分类&#x2F;归档&#x2F;本地搜索能力齐备
+
+
+链接转换
+Hexo 插件将词条内 .md 相对链接转为站点 URL
+保证词条互链在仓库和网站上双端可用
+
+
+自动发布
+GitHub Actions → GitHub Pages
+推内容即更新网站，零运维
+
+
+体检后端
+GitHub Actions + 模型 API（密钥存 Actions Secrets）
+静态站无法跑 AI，用 Actions 做后台执行
+
+
+生成工具
+Python（OpenAI 兼容 SDK）+ 本地网页对话界面
+模型可切换，不绑定特定 AI 应用；日常以网页对话为主，CLI 为底层管道
+
+
+8. 非目标（本阶段不做）
+不做 Obsidian 双链语法（用标准 Markdown 链接替代，反链靠体检统计）
+不做多人协作、权限管理
+不做移动端 App
+不做规模预设与容量规划（规模大了再演进目录结构）
+体检报告不自动执行合并等破坏性操作，仅提供建议
+
+9. 里程碑
+
+
+阶段
+交付物
+
+
+
+M1 · 骨架
+在现有 Hexo 仓库上落地三层结构：sources&#x2F; + source&#x2F;_posts&#x2F;tech|insights + skill 包 + 链接转换插件 + GitHub Pages 自动构建跑通
+
+
+M2 · 入库闭环
+底层命令可用（ingest&#x2F;learn：链接&#x2F;文字&#x2F;PDF → 词条生成，含查重、出处）+ 本地网页对话界面上线
+
+
+M3 · 体检与手机入口
+check 命令 + 网站体检按钮 + 报告页 + GitHub Issue 触发入库工作流
+
+
+M4 · 风格学习
+style-profile.md 机制跑通，完成前几轮”生成→修改→学习”迭代
+
+
+
+下篇 · 底座搭建实操（Hexo + NexT + GitHub Pages）读取侧底座使用 Hexo 将 Markdown 文件编译为静态网页，通过 GitHub Pages 托管，并借助 GitHub Actions 实现 push 自动部署。
+涉及的组件：
+
+
+
+组件
+说明
+
+
+
+Hexo
+基于 Node.js 的静态博客框架，负责将 Markdown 编译为静态站点
+
+
+NexT
+Hexo 生态中使用最广泛的社区主题，提供多种方案和丰富的可配置项
+
+
+GitHub Pages
+GitHub 提供的静态网站托管服务，无需自建服务器
+
+
+GitHub Actions
+CI&#x2F;CD 流水线，用于在代码推送到仓库后自动执行编译和部署
+
+
+10. 环境准备Node.jsHexo 基于 Node.js，要求版本不低于 v18。执行以下命令确认已安装：
+node --version
+
+未安装时前往 Node.js 官网 下载 LTS 版本。
+Git用于版本控制和远程推送：
+git --version
+
+未安装时前往 Git 官网 下载。
+GitHub 账号用于代码托管和静态站点发布。如需在命令行中操作 GitHub，可安装 GitHub CLI（可选，不影响后续步骤）。
+11. 安装 Hexo在终端（Windows 推荐 Git Bash 或 PowerShell）中执行：
+npm install -g hexo-cli
+
+安装完成后验证：
+hexo version
+
+12. 初始化项目mkdir D:\wikicd D:\wikihexo init .npm install
+
+hexo init . 会在当前目录生成项目结构：
+wiki/├── _config.yml          # 站点配置文件├── source/│   └── _posts/          # 文章目录├── themes/              # 主题目录├── scaffolds/           # 文章模板├── package.json         # Node.js 依赖声明└── node_modules/        # 已安装的依赖
+
+13. 安装 NexT 主题NexT 是 Hexo 社区中安装量最高的主题，特点为功能完善、文档齐全、可配置程度高。
+npm install hexo-theme-next
+
+安装后修改 _config.yml 中的 theme 字段，将默认值 landscape 替换为 next：
+theme: next
+
+14. 配置站点信息编辑项目根目录下的 _config.yml，重点修改以下字段：
+title: 个人学习 Wikisubtitle: 日拱一卒，功不唐捐description: 个人学习知识库author: 你的名称language: zh-CNtimezone: &#x27;Asia/Shanghai&#x27;url: https://你的用户名.github.io/wikitheme: next
+
+url 字段填写最终部署地址，GitHub 仓库创建后即可确定。
+15. 配置 NexT 主题NexT 的主题配置位于项目根目录下的 _config.next.yml。若该文件不存在，手动新建。
+Scheme 选择NexT 提供四种方案，通过 scheme 字段切换：
+
+
+
+方案
+说明
+
+
+
+Muse
+无侧边栏，全宽布局
+
+
+Mist
+紧凑型侧边栏
+
+
+Pisces
+常规侧边栏，适合知识库
+
+
+Gemini
+大尺寸侧边栏
+
+
+推荐 Pisces。基础配置：
+scheme: Piscesdarkmode: truemenu:  home: / || fa fa-home  categories: /categories/ || fa fa-th  about: /about/ || fa fa-usersidebar:  position: left  display: postback2top:  enable: true  sidebar: false  scrollpercent: falsecodeblock:  copy_button:    enable: true    show_result: true    style: flatexcerpt_description: true
+
+
+darkmode: true — 启用暗黑模式切换
+excerpt_description: true — 首页使用 description 字段作为摘要，而非截取正文
+
+16. 本地预览推送至远程仓库之前，先在本地启动服务验证效果：
+hexo server
+
+或简写为 hexo s。默认访问地址为 http://localhost:4000。若端口被占用，Hexo 会自动切换到下一个可用端口，注意观察终端输出的实际地址。
+hexo server 会持续监听文件变更，修改文章或配置后刷新浏览器即可查看更新，无需手动重启。按 Ctrl + C 停止服务。
+17. 创建 GitHub 仓库在 GitHub 上新建仓库，名称建议为 wiki（该名称将作为 URL 路径的一部分，如 用户名.github.io/wiki）。
+仓库可见性需设为 Public，这是使用免费 GitHub Pages 的前提。
+若已安装 GitHub CLI：
+gh repo create 你的用户名/wiki --public --description &quot;个人学习 wiki 知识库&quot;
+
+18. 配置自动部署GitHub Actions 可以将编译部署自动化：向 main 分支推送代码后，自动触发编译并部署至 gh-pages 分支。
+在项目目录下创建 .github/workflows/deploy.yml：
+name: Deployon:  push:    branches: [main]permissions:  contents: writejobs:  deploy:    runs-on: ubuntu-latest    steps:      - uses: actions/checkout@v4      - uses: actions/setup-node@v4        with:          node-version: &#x27;20&#x27;      - run: npm ci      - run: npx hexo generate      - uses: peaceiris/actions-gh-pages@v4        with:          github_token: $&#123;&#123; secrets.GITHUB_TOKEN &#125;&#125;          publish_dir: ./public          publish_branch: gh-pages          force_orphan: true
+
+工作流说明：
+
+actions/checkout@v4 — 检出仓库代码
+actions/setup-node@v4 — 配置 Node.js 环境
+npm ci — 安装依赖
+npx hexo generate — 编译生成静态文件至 public/ 目录
+peaceiris/actions-gh-pages@v4 — 将 public/ 目录推送至 gh-pages 分支
+
+19. 推送并启用 Pagescd D:\wikigit initgit checkout -b maingit add -Agit commit -m &quot;初始化 wiki&quot;git remote add origin git@github.com:你的用户名/wiki.gitgit push -u origin main
+
+
+使用 git@github.com:... 格式的 SSH 地址需要先在 GitHub 中配置 SSH 公钥。也可使用 HTTPS 地址 https://github.com/你的用户名/wiki.git，首次推送时会提示登录。
+
+推送完成后，进入 GitHub 仓库页面 → Settings → Pages，将 Source 设置为 gh-pages 分支。GitHub 将在数分钟内完成首次部署。
+最终访问地址：https://你的用户名.github.io/wiki
+此后每次向 main 分支推送代码，GitHub Actions 均会自动重新部署。
+20. 日常写作与维护日常写作流程cd D:\wiki# 1. 创建新文章hexo new &quot;文章标题&quot;# 2. 文章生成于 source/_posts/ 目录，使用任意文本编辑器编辑# 3. 本地预览hexo server# 浏览器访问 http://localhost:4000# 4. 推送git add -Agit commit -m &quot;新增：文章标题&quot;git push
+
+
+待 M2 入库闭环上线后，词条类内容由 ingest&#x2F;learn 流程自动生成，hexo new 仅用于非词条的传统博文。
+
+手动编译若需查看编译产物或在离线状态下调试：
+hexo clean       # 清除缓存与编译输出hexo generate    # 重新编译至 public/ 目录
+
+hexo clean 仅在配置变更未生效或编译异常时使用。日常预览使用 hexo server 即可，该命令已内置编译步骤。
+21. 文章编写规范文件格式所有文章置于 source/_posts/ 目录，文件格式为 Markdown（.md）。词条按分区置于 source/_posts/tech/ 与 source/_posts/insights/ 子目录，Hexo 按子目录自动归类。
+Frontmatter每篇文章以 YAML 格式的 Frontmatter 开头，定义元信息：
+---title: 文章标题date: 2026-06-08 12:00:00categories: [一级分类, 子分类]description: 文章概述，显示于首页标题下方，建议控制在两句话以内。---
+
+description 决定了首页文章卡片的概述文字。若省略此字段，Hexo 将自动截取正文头部内容作为摘要（通常效果不佳），因此建议每篇文章自行填写。
+文章模板hexo new 命令使用 scaffolds/post.md 作为模板生成文件。可编辑该模板，预设常用的 categories，减少重复填写。
+22. Windows 环境注意事项
+终端推荐使用 Git Bash 或 PowerShell
+文件路径中的正斜杠 / 和反斜杠 \ 均可使用，Hexo 内部统一处理
+node_modules/ 由 .gitignore 排除，不会被提交至仓库
+如 hexo server 启动异常，先执行 hexo clean 清空缓存后重试
+
+
+附录：使用 AI 重建底座以下提示语可供 AI 助手直接执行，用于重建或迁移底座方案。
+完整提示语使用 Hexo + NexT 主题 + GitHub Pages 搭建个人 Wiki 知识库。要求：1. 本地目录 D:\wiki2. GitHub 仓库：当前用户名/wiki3. 主题方案：NexT Pisces4. 启用暗黑模式、代码复制按钮、回到顶部按钮5. 首页使用 description 字段显示文章摘要（关闭正文截取）6. 导航栏仅保留首页、分类、关于7. 配置 GitHub Actions：向 main 分支推送后自动编译并部署至 gh-pages8. 生成分类页与关于页执行步骤：- 验证 Node.js 与 Git 环境- npm install -g hexo-cli- hexo init D:\wiki &amp;&amp; npm install- npm install hexo-theme-next- 创建 _config.next.yml 并配置 Pisces 方案- 修改 _config.yml 中的站点信息与 url- gh repo create 创建仓库- 配置 .github/workflows/deploy.yml- git push 并确认线上访问正常
+
+简化提示语使用 Hexo + NexT + GitHub Pages 搭建 Wiki，本地目录 D:\wiki，仓库名称 wiki，启用暗黑模式。
+
+
+参考链接
+Hexo 官方文档
+NexT 主题文档
+GitHub Pages 文档
+GitHub Actions 文档
+
+]]></content>
+      <categories>
+        <category>部署</category>
+      </categories>
+  </entry>
+  <entry>
+    <title></title>
+    <url>/wiki/2026/10/09/AI%E7%BD%91%E7%AB%99%E8%AE%B0%E5%BD%95/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>Claude Code 介绍</title>
+    <url>/wiki/2026/06/09/Agent%E5%B7%A5%E5%85%B7/ClaudeCode/ClaudeCode%E4%BB%8B%E7%BB%8D/</url>
+    <content><![CDATA[概述Claude Code 是 Anthropic 推出的面向开发者的 AI 编程协作工具。与网页版 Claude 不同，Claude Code 在终端中运行，能够读取项目代码、理解文件间关系、直接修改文件并执行指令。
+核心特征：
+
+上下文感知：理解整个项目结构，而非单一文件
+工程化导向：关注可维护性、规范与测试
+可定制行为：通过 Skills（技能包）定义特定编码规则
+
+
+
+
+对比维度
+Claude（网页版）
+Claude Code
+
+
+
+运行环境
+浏览器
+终端
+
+
+交互方式
+复制代码片段提问
+直接访问项目文件系统
+
+
+代码修改
+仅提供建议
+可直接编辑文件
+
+
+项目理解
+仅限粘贴内容
+理解完整项目结构
+
+
+功能特性代码理解与解释支持以下查询类型：
+
+函数功能与逻辑分析
+错误原因定位
+性能瓶颈识别
+
+Claude Code 结合项目上下文给出解释，而非孤立分析代码片段。
+多文件上下文分析区别于单文件代码补全工具，Claude Code 能够理解：
+
+函数调用关系与引用链
+模块依赖拓扑
+项目整体架构
+
+工程级代码修改支持批量代码重构指令，例如：
+
+将 var 声明统一替换为 let
+拆分长函数为多个子函数
+为接口批量添加错误处理
+
+Claude Code 直接修改源文件，而非仅输出建议。
+Skills 扩展能力Skills 是 Claude Code 的核心扩展机制，允许开发者将编码习惯与团队规则注入 AI 行为。典型场景：
+
+强制函数注释规范
+约束 API 响应格式
+要求测试用例覆盖边界条件
+
+局限性Claude Code 在以下场景存在限制：
+
+技术决策的最终判断需由开发者确认
+生成代码无法保证 100% 无缺陷
+无法理解未被明确描述的业务语义
+不适用于开发者完全不理解代码逻辑的全自动接管
+
+工作原理工作流程Claude Code 以循环方式处理任务，每个循环包含三个阶段：
+
+收集上下文：读取代码、文件、错误信息
+执行操作：编辑文件、运行命令、搜索
+验证结果：检查执行状态并决定是否调整
+
+三个阶段持续循环直至任务完成。用户可随时中断、调整方向或切换策略。
+
+该循环由模型和工具两大部分驱动。
+模型Claude Code 使用 Anthropic 的 Claude 系列模型进行代码理解与任务规划。模型能够识别多种编程语言，理解项目结构，并将复杂任务拆解为可执行的子步骤。
+推荐模型选择：
+
+Sonnet：适用于日常编码任务（速度快、性价比高）
+Opus：适用于复杂架构设计与深度推理场景
+
+工具Claude Code 内置五类工具：
+
+
+
+工具类别
+功能
+
+
+
+文件操作
+读取、编辑、创建、重命名文件
+
+
+搜索
+按文件名或正则表达式检索代码
+
+
+命令执行
+运行 npm、git、测试、服务启动等
+
+
+网络搜索
+查阅文档与错误信息
+
+
+代码智能
+类型检查、定义跳转、引用查找（需安装语言插件）
+
+
+实际工作流示例（修复失败测试）：
+
+运行测试定位失败用例
+阅读错误日志
+搜索相关源文件
+分析代码逻辑
+修改代码
+重新运行测试验证
+
+访问范围Claude Code 的可见范围包括：
+
+项目目录及其所有子文件
+终端可执行的任意命令（npm、git、构建工具等）
+当前 Git 状态（分支、未提交变更、提交历史）
+CLAUDE.md 文件（项目专属规则定义）
+自动记忆（项目习惯记录，存于 MEMORY.md 前 200 行）
+MCP、Skills 等扩展配置
+
+跨分支工作Claude Code 的会话与文件夹绑定，而非与 Git 分支绑定。实际效果：
+
+切换分支（git checkout &#x2F; git switch）后，Claude Code 自动读取新分支文件
+聊天记录在分支切换后保持不变，上下文不丢失
+同一文件夹下的不同分支共享会话历史
+
+多分支并行开发建议：使用 git worktrees 为每个分支创建独立目录，各分支拥有完全隔离的对话记录，互不干扰。
+
+上下文窗口Claude Code 存在上下文容量限制。接近上限时的处理方式：
+
+自动压缩旧内容
+通过 /compact 手动压缩
+通过 /context 查看当前占用情况
+
+减少上下文占用的策略：
+
+将重要规则写入 CLAUDE.md
+使用 Skills 和 Subagents 减少不必要的内容注入
+
+安全机制检查点：Claude Code 修改文件前自动创建备份。双击 Esc 或输入撤销指令即可回退至修改前状态。
+权限模式（Shift + Tab 快速切换）：
+
+
+
+模式
+行为
+
+
+
+默认
+文件修改与命令执行均需确认
+
+
+自动接受编辑
+文件修改无需确认，命令仍需确认
+
+
+计划模式
+仅分析与规划，不执行实际操作
+
+
+可在 .claude/settings.json 中将特定命令加入白名单（如 npm test），跳过确认步骤。
+使用建议
+向 Claude Code 询问自身用法：输入 /init 或具体问题获取引导
+采用对话式交互：先描述大致需求，根据结果迭代修正，无需每次重写完整提示
+随时中断：方向偏离时直接输入新指令，Claude Code 立即调整
+提供具体提示。错误示例：”修复登录错误”。正确示例：”持卡人过期的用户结账流程异常，检查 src/payments/ 目录，重点关注令牌刷新逻辑，先编写失败测试再修复”
+要求自行验证：附带测试用例或预期结果，Claude Code 执行后自动确认
+先探索后实现：使用计划模式（Shift+Tab 两次）分析代码库并输出完整计划，审核通过后再执行
+
+参考文档
+菜鸟教程 — Claude Code 教程
+Claude Code 中文官方文档
+
+]]></content>
+      <categories>
+        <category>Agent工具</category>
+        <category>ClaudeCode</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>搭建个人 Wiki 知识库</title>
+    <url>/wiki/2026/06/08/%E9%83%A8%E7%BD%B2/%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BAWiki%E7%9F%A5%E8%AF%86%E5%BA%93/</url>
+    <content><![CDATA[方案概述本方案使用 Hexo 将 Markdown 文件编译为静态网页，通过 GitHub Pages 进行托管，并借助 GitHub Actions 实现 push 自动部署。
+涉及的组件：
+
+
+
+组件
+说明
+
+
+
+Hexo
+基于 Node.js 的静态博客框架，负责将 Markdown 编译为静态站点
+
+
+NexT
+Hexo 生态中使用最广泛的社区主题，提供多种方案和丰富的可配置项
+
+
+GitHub Pages
+GitHub 提供的静态网站托管服务，无需自建服务器
+
+
+GitHub Actions
+CI&#x2F;CD 流水线，用于在代码推送到仓库后自动执行编译和部署
+
+
+
+环境准备Node.jsHexo 基于 Node.js，要求版本不低于 v18。执行以下命令确认已安装：
+node --version
+
+未安装时前往 Node.js 官网 下载 LTS 版本。
+Git用于版本控制和远程推送。
+git --version
+
+未安装时前往 Git 官网 下载。
+GitHub 账号用于代码托管和静态站点发布。如需在命令行中操作 GitHub，可安装 GitHub CLI（可选，不影响后续步骤）。
+
+第一步：安装 Hexo在终端（Windows 推荐 Git Bash 或 PowerShell，macOS&#x2F;Linux 使用系统终端）中执行：
+npm install -g hexo-cli
+
+安装完成后验证：
+hexo version
+
+第二步：初始化项目mkdir D:\wikicd D:\wikihexo init .npm install
+
+hexo init . 会在当前目录生成项目结构：
+wiki/├── _config.yml          # 站点配置文件├── source/│   └── _posts/          # 文章目录├── themes/              # 主题目录├── scaffolds/           # 文章模板├── package.json         # Node.js 依赖声明└── node_modules/        # 已安装的依赖
+
+第三步：安装 NexT 主题NexT 是 Hexo 社区中安装量最高的主题，特点为功能完善、文档齐全、可配置程度高。
+npm install hexo-theme-next
+
+安装后修改 _config.yml 中的 theme 字段，将默认值 landscape 替换为 next：
+theme: next
+
+第四步：配置站点信息编辑项目根目录下的 _config.yml，重点修改以下字段：
+title: 个人学习 Wikisubtitle: 日拱一卒，功不唐捐description: 个人学习知识库author: 你的名称language: zh-CNtimezone: &#x27;Asia/Shanghai&#x27;url: https://你的用户名.github.io/wikitheme: next
+
+url 字段填写最终部署地址，GitHub 仓库创建后即可确定。
+第五步：配置 NexT 主题NexT 的主题配置位于项目根目录下的 _config.next.yml。若该文件不存在，手动新建。
+Scheme 选择NexT 提供四种方案，通过 scheme 字段切换：
+
+
+
+方案
+说明
+
+
+
+Muse
+无侧边栏，全宽布局
+
+
+Mist
+紧凑型侧边栏
+
+
+Pisces
+常规侧边栏，适合知识库
+
+
+Gemini
+大尺寸侧边栏
+
+
+推荐 Pisces。基础配置：
+scheme: Piscesdarkmode: truemenu:  home: / || fa fa-home  categories: /categories/ || fa fa-th  about: /about/ || fa fa-usersidebar:  position: left  display: postback2top:  enable: true  sidebar: false  scrollpercent: falsecodeblock:  copy_button:    enable: true    show_result: true    style: flatexcerpt_description: true
+
+
+darkmode: true — 启用暗黑模式切换
+excerpt_description: true — 首页使用 description 字段作为摘要，而非截取正文
+
+第六步：本地预览推送至远程仓库之前，先在本地启动服务验证效果：
+hexo server
+
+或简写为 hexo s。
+默认访问地址为 http://localhost:4000。若端口被占用，Hexo 会自动切换到下一个可用端口，注意观察终端输出的实际地址。
+hexo server 会持续监听文件变更，修改文章或配置后刷新浏览器即可查看更新，无需手动重启。
+按 Ctrl + C 停止服务。
+第七步：创建 GitHub 仓库在 GitHub 上新建仓库，名称建议为 wiki（该名称将作为 URL 路径的一部分，如 用户名.github.io/wiki）。
+仓库可见性需设为 Public，这是使用免费 GitHub Pages 的前提。
+若已安装 GitHub CLI：
+gh repo create 你的用户名/wiki --public --description &quot;个人学习 wiki 知识库&quot;
+
+第八步：配置自动部署每次手动执行编译和部署效率较低。GitHub Actions 可以将这一过程自动化：向 main 分支推送代码后，自动触发编译并部署至 gh-pages 分支。
+在项目目录下创建 .github/workflows/deploy.yml：
+name: Deployon:  push:    branches: [main]permissions:  contents: writejobs:  deploy:    runs-on: ubuntu-latest    steps:      - uses: actions/checkout@v4      - uses: actions/setup-node@v4        with:          node-version: &#x27;20&#x27;      - run: npm ci      - run: npx hexo generate      - uses: peaceiris/actions-gh-pages@v4        with:          github_token: $&#123;&#123; secrets.GITHUB_TOKEN &#125;&#125;          publish_dir: ./public          publish_branch: gh-pages          force_orphan: true
+
+工作流说明：
+
+actions/checkout@v4 — 检出仓库代码
+actions/setup-node@v4 — 配置 Node.js 环境
+npm ci — 安装依赖
+npx hexo generate — 编译生成静态文件至 public/ 目录
+peaceiris/actions-gh-pages@v4 — 将 public/ 目录推送至 gh-pages 分支
+
+第九步：推送并启用 Pagescd D:\wikigit initgit checkout -b maingit add -Agit commit -m &quot;初始化 wiki&quot;git remote add origin git@github.com:你的用户名/wiki.gitgit push -u origin main
+
+
+使用 git@github.com:... 格式的 SSH 地址需要先在 GitHub 中配置 SSH 公钥。也可使用 HTTPS 地址 https://github.com/你的用户名/wiki.git，首次推送时会提示登录。
+
+推送完成后，进入 GitHub 仓库页面 → Settings → Pages，将 Source 设置为 gh-pages 分支。GitHub 将在数分钟内完成首次部署。
+最终访问地址：https://你的用户名.github.io/wiki
+此后每次向 main 分支推送代码，GitHub Actions 均会自动重新部署。
+
+本地开发流程日常写作cd D:\wiki# 1. 拉取远程更新（单人不需执行）git pull# 2. 创建新文章hexo new &quot;文章标题&quot;# 3. 文章生成于 source/_posts/ 目录，使用任意文本编辑器编辑# 4. 本地预览hexo server# 浏览器访问 http://localhost:4000# 5. 推送git add -Agit commit -m &quot;新增：文章标题&quot;git push
+
+手动编译若需查看编译产物或在离线状态下调试：
+hexo clean       # 清除缓存与编译输出hexo generate    # 重新编译至 public/ 目录
+
+hexo clean 仅在配置变更未生效或编译异常时使用。日常预览使用 hexo server 即可，该命令已内置编译步骤。
+
+文章编写规范文件格式所有文章置于 source/_posts/ 目录，文件格式为 Markdown（.md）。
+Frontmatter每篇文章以 YAML 格式的 Frontmatter 开头，定义元信息：
+---title: 文章标题date: 2026-06-08 12:00:00categories: [一级分类, 子分类]description: 文章概述，显示于首页标题下方，建议控制在两句话以内。---
+
+description 字段description 决定了首页文章卡片的概述文字。若省略此字段，Hexo 将自动截取正文头部内容作为摘要（通常效果不佳），因此建议每篇文章自行填写。
+正文语法支持标准 Markdown 语法：# 表示标题、三个反引号包裹代码块、[文字](url) 表示链接。
+文章模板hexo new 命令使用 scaffolds/post.md 作为模板生成文件。可编辑该模板，预设常用的 categories，减少重复填写。
+
+Windows 环境注意事项
+终端推荐使用 Git Bash 或 PowerShell。
+文件路径中的正斜杠 / 和反斜杠 \ 均可使用，Hexo 内部统一处理。
+node_modules/ 由 .gitignore 排除，不会被提交至仓库。
+如 hexo server 启动异常，先执行 hexo clean 清空缓存后重试。
+
+
+附录：使用 AI 搭建以下提示语可供 AI 助手直接执行，用于重建或迁移本方案。
+完整提示语使用 Hexo + NexT 主题 + GitHub Pages 搭建个人 Wiki 知识库。要求：1. 本地目录 D:\wiki2. GitHub 仓库：当前用户名/wiki3. 主题方案：NexT Pisces4. 启用暗黑模式、代码复制按钮、回到顶部按钮5. 首页使用 description 字段显示文章摘要（关闭正文截取）6. 导航栏仅保留首页、分类、关于7. 配置 GitHub Actions：向 main 分支推送后自动编译并部署至 gh-pages8. 生成分类页与关于页9. 首篇文章为本搭建教程执行步骤：- 验证 Node.js 与 Git 环境- npm install -g hexo-cli- hexo init D:\wiki &amp;&amp; npm install- npm install hexo-theme-next- 创建 _config.next.yml 并配置 Pisces 方案- 修改 _config.yml 中的站点信息与 url- gh repo create 创建仓库- 配置 .github/workflows/deploy.yml- git push 并确认线上访问正常
+
+简化提示语使用 Hexo + NexT + GitHub Pages 搭建 Wiki，本地目录 D:\wiki，仓库名称 wiki，启用暗黑模式。
+
+
+参考链接
+Hexo 官方文档
+NexT 主题文档
+GitHub Pages 文档
+GitHub Actions 文档
+
+]]></content>
+      <categories>
+        <category>部署</category>
+      </categories>
+  </entry>
+</search>
